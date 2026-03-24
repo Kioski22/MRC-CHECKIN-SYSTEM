@@ -74,3 +74,4 @@ jobs:
             **/scss/**
             **/tests/**
             **/.vscode/**
+            **/vendor/**
