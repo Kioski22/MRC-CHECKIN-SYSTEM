@@ -1,0 +1,76 @@
+name: CI/CD to GoDaddy cPanel
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: cpanel-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: PHP Syntax Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Lint PHP files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -d '' php_files < <(find . -type f -name "*.php" \
+            -not -path "./vendor/*" \
+            -not -path "./node_modules/*" \
+            -not -path "./.git/*" -print0)
+
+          if [ ${#php_files[@]} -eq 0 ]; then
+            echo "No PHP files found."
+            exit 0
+          fi
+
+          for file in "${php_files[@]}"; do
+            php -l "$file"
+          done
+
+  deploy:
+    name: Deploy to GoDaddy cPanel
+    runs-on: ubuntu-latest
+    needs: ci
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./
+          server-dir: ${{ secrets.CPANEL_TARGET_DIR }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*/**
+            **/.github/**
+            **/node_modules/**
+            **/docs/**
+            **/*.md
+            **/*.zip
+            **/scss/**
+            **/tests/**
+            **/.vscode/**

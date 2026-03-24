@@ -1,9 +1,9 @@
 <?php
 // Database connection settings
 $host = 'localhost';        // Database host (usually localhost)
-$db_user = 'root'; // Database username
-$db_password = ''; // Database password
-$db_name = 'MRC';  // Database name
+$db_user = 'icto_randy4'; // Database username
+$db_password = '091902Rands@'; // Database password
+$db_name = 'mrc';  // Database name
 
 // Create a new MySQLi connection
 $db = new mysqli($host, $db_user, $db_password, $db_name);
