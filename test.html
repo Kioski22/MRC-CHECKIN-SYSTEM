@@ -1,0 +1,17 @@
+<div style="width: 70mm; height: 50mm; display: flex; font-size: 16px; text-align: center; line-height: 1; margin: 0; font-weight: bold; border: 2px solid black;">
+    <!-- Left Column: Name and Chapter -->
+    <div style="width: 33%; margin-left: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2mm;">
+        <!-- Left align name and chapter with dynamic font size and wrapping -->
+        <p style="margin-bottom: 5px; font-size: calc(24px - (2mm * (100% - 33%))); text-align: left; width: 100%; max-width: 100%; overflow-wrap: normal;">
+            <strong>${lastname}, ${firstname} ${middlename}</strong>
+        </p>
+        <p style="margin-top: 5px; text-align: left; width: 100%; max-width: 100%; overflow-wrap: break-word; font-size: calc(16px - (1mm * (100% - 33%)));">
+            <strong>${chapter}</strong>
+        </p>
+    </div>
+
+    <!-- Right Column: QR Code -->
+    <div style="width: 67%; display: flex; justify-content: center; align-items: center;">
+        <img src="${qrcodeLink}" alt="QR Code" style="width: 35mm; height: 35mm;">
+    </div>
+</div>

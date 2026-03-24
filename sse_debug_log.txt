@@ -1,0 +1,4 @@
+2024-10-10 17:03:57 - Starting SSE Loop
+2024-10-10 17:03:57 - Sent updated data: {"checkedins":{"value":"1","color":"primary","icon":"user-check","label":"Total Checked In"},"releasedkits":{"value":"90","color":"danger","icon":"shopping-bag","label":"Total Released Kit"}}
+2024-10-10 17:04:03 - Starting SSE Loop
+2024-10-10 17:04:03 - Sent updated data: {"checkedins":{"value":"1","color":"primary","icon":"user-check","label":"Total Checked In"},"releasedkits":{"value":"90","color":"danger","icon":"shopping-bag","label":"Total Released Kit"}}

@@ -1,0 +1,59 @@
+RewriteEngine On
+
+# Add Permissions Policy headers for camera access (modern browsers)
+Header always set Permissions-Policy "camera=(self), microphone=(self)"
+
+# Security headers
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options SAMEORIGIN
+Header always set X-XSS-Protection "1; mode=block"
+
+# Exclude static files and setup scripts from rewriting
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|pdf|zip|bak|csv|webp|bmp|tiff|tif|html)$ [NC]
+RewriteRule ^ - [L]
+
+# Exclude uploads directory and all its contents from rewriting (absolute and relative paths)
+RewriteCond %{REQUEST_URI} ^/?uploads/ [NC]
+RewriteRule ^ - [L]
+
+# Exclude vendor directory and all its contents from rewriting (absolute and relative paths)
+RewriteCond %{REQUEST_URI} ^/?vendor/ [NC]
+RewriteRule ^ - [L]
+
+# Exclude libs directory and all its contents from rewriting (absolute and relative paths)
+RewriteCond %{REQUEST_URI} ^/?libs/ [NC]
+RewriteRule ^ - [L]
+
+# Exclude include directory and all its contents from rewriting (absolute and relative paths)
+RewriteCond %{REQUEST_URI} ^/?include/ [NC]
+RewriteRule ^ - [L]
+
+# Exclude PHPMailer directory and all its contents from rewriting (absolute and relative paths)
+RewriteCond %{REQUEST_URI} ^/?PHPMailer/ [NC]
+RewriteRule ^ - [L]
+
+# Exclude specific setup/admin scripts from URL rewriting (absolute and relative paths)
+RewriteCond %{REQUEST_URI} ^/?(setup_|admin_|debug_|test_) [NC]
+RewriteRule ^ - [L]
+
+# Redirect .php extension to clean URLs (do this first)
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ /%1? [R=301,L]
+
+# Redirect .html extension to clean URLs (exclude test files)
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+RewriteCond %{REQUEST_URI} !^/?(test_|debug_|setup_|admin_) [NC]
+RewriteRule ^ /%1? [R=301,L]
+
+# Remove .php extension from URLs
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|pdf|zip|bak|csv)$ [NC]
+RewriteRule ^([^\.]+)$ $1.php [L]
+
+# Remove .html extension from URLs (fallback, exclude test files)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|pdf|zip|bak|csv)$ [NC]
+RewriteCond %{REQUEST_URI} !^/?(test_|debug_|setup_|admin_) [NC]
+RewriteRule ^([^\.]+)$ $1.html [L]

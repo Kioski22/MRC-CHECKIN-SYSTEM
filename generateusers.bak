@@ -1,0 +1,43 @@
+<?php
+
+include 'dbConnection.php';
+
+// Automated user creation for Booth1 to Booth17
+for ($i = 1; $i <= 17; $i++) {
+    $username = "Booth" . $i;
+    $password = generatePassword(6); // Generate 6 character alphanumeric password
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT); // Secure password hashing
+    $email = "booth" . $i . "@psmeinc.org.ph";
+    $role_id = 2; // Assuming role_id is 2 for Booth users
+    $created_at = date('Y-m-d H:i:s');
+
+    $stmt = $db->prepare("INSERT INTO users (username, password_hash, email, status, created_at) VALUES (?, ?, ?, 'active', ?)");
+    $stmt->bind_param("ssss", $username, $hashed_password, $email, $created_at);
+    if ($stmt->execute()) {
+        $user_id = $stmt->insert_id;
+        $stmt->close();
+
+        $role_stmt = $db->prepare("INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)");
+        $role_stmt->bind_param("ii", $user_id, $role_id);
+        $role_stmt->execute();
+        $role_stmt->close();
+
+        echo "User $username created successfully with email $email and password $password\n";
+    } else {
+        echo "Error: " . $stmt->error . "\n";
+    }
+}
+
+// Function to generate a 6 character alphanumeric password
+function generatePassword($length = 6) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
+
+$db->close();
+?>

@@ -1,0 +1,58 @@
+<?php
+require('dbConnection.php');
+
+// Set the connection charset to utf8mb4 to handle special characters
+$db->set_charset("utf8mb4");
+
+// Path to the CSV file
+$csvFilePath = 'include/regionstochapters.csv';
+
+// Open the CSV file with the correct encoding handling
+if (($handle = fopen($csvFilePath, 'r')) !== FALSE) {
+    // Set locale for UTF-8 encoding
+    setlocale(LC_ALL, 'en_US.UTF-8');
+
+    // Get the headers (regions) from the first row
+    $headers = fgetcsv($handle);
+
+    // Prepare the SQL statements
+    $checkStmt = $db->prepare("SELECT COUNT(*) FROM chapters WHERE region = ? AND chapter = ?");
+    $insertStmt = $db->prepare("INSERT INTO chapters (region, chapter) VALUES (?, ?)");
+
+    // Loop through each row of the CSV file
+    while (($data = fgetcsv($handle, 0, ',', '"')) !== FALSE) {
+        // Loop through each region and its corresponding chapter
+        foreach ($headers as $index => $region) {
+            // Ensure both region and chapter are properly trimmed and converted to UTF-8
+            $region = trim(mb_convert_encoding($region, 'UTF-8', 'auto'));
+            $chapter = trim(mb_convert_encoding($data[$index], 'UTF-8', 'auto'));
+
+            // Ensure that both region and chapter are not empty
+            if (!empty($region) && !empty($chapter)) {
+                // Check if this entry already exists in the database
+                $checkStmt->bind_param("ss", $region, $chapter);
+                $checkStmt->execute();
+                $checkStmt->bind_result($count);
+                $checkStmt->fetch();
+
+                if ($count == 0) {
+                    // If the entry does not exist, insert it
+                    $insertStmt->bind_param("ss", $region, $chapter);
+                    $insertStmt->execute();
+                }
+            }
+        }
+    }
+
+    // Close the CSV file
+    fclose($handle);
+
+    // Close the prepared statements and connection
+    $checkStmt->close();
+    $insertStmt->close();
+    $db->close();
+
+    echo "Chapters have been inserted successfully!";
+} else {
+    die("Could not open the CSV file.");
+}

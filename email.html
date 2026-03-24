@@ -1,0 +1,30 @@
+<html>
+    <body style='font-family: Arial, sans-serif;'>
+        <div style='text-align: center;'>
+            <img src='{$logo_url}' alt='PSME Logo' style='width: 150px;'><br>
+            <h2>You're going to the 72nd National Convention!</h2>
+            <h4>Reference No. {$qrcode}</h4>
+            <p>72nd PSME National Convention in SMX Manila</p>
+            <p>17 - 19 October 2024</p>
+            <p>SMX Convention Center Manila, Pasay City, Philippines</p>
+        </div>
+        <hr>
+        <div style='text-align: center;'>
+            <h4>e-Ticket QR Code</h4>
+            <img src='{$qrcode_url}' alt='QR Code' style='width: 150px;'><br>
+        </div>
+        <hr>
+        <div>
+            <h4>Ticket Holder:</h4>
+            <p>Name: {$name}</p>
+            <p>Mobile: {$mobilenumber}</p>
+            <p>Email: {$email}</p>
+            <p>Reference No. {$qrcode}</p>
+            <p>Issued On: {$timestamp}</p>
+            <hr>
+            <h3>e-Ticket</h3>
+            <p>(Print this ticket and bring it with you to the event.)</p>
+            <p>Reference No. {$qrcode}</p>
+        </div>
+    </body>
+    </html>

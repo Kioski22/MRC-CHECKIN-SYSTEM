@@ -1,0 +1,459 @@
+{
+  "database": {
+    "name": "psmenow_natcon",
+    "host": "20.24.15.42",
+    "charset": "utf8mb4"
+  },
+  "tables": {
+    "food": {
+      "purpose": "Stores food registration records for the national convention",
+      "columns": {
+        "id": {
+          "type": "int(11)",
+          "null": false,
+          "key": "PRIMARY",
+          "default": null,
+          "extra": "auto_increment",
+          "description": "Primary key, unique identifier"
+        },
+        "email_address": {
+          "type": "varchar(255)",
+          "null": false,
+          "key": "UNIQUE",
+          "default": null,
+          "extra": "",
+          "description": "Registrant's email address (unique)"
+        },
+        "first_name": {
+          "type": "varchar(100)",
+          "null": false,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Registrant's first name"
+        },
+        "middle_name": {
+          "type": "varchar(100)",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Registrant's middle name (optional)"
+        },
+        "last_name": {
+          "type": "varchar(100)",
+          "null": false,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Registrant's last name"
+        },
+        "suffix": {
+          "type": "varchar(20)",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Name suffix (Jr., Sr., III, etc.)"
+        },
+        "mapping": {
+          "type": "varchar(255)",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Email mapping for external API correlation"
+        }
+      },
+      "indexes": [
+        "PRIMARY KEY (id)",
+        "UNIQUE KEY email_address (email_address)"
+      ],
+      "business_rules": [
+        "Email address must be unique across all registrations",
+        "First name, last name, and email address are required",
+        "Mapping field is used for correlating with external PSME API data",
+        "When mapping is NULL or empty, the record is considered unmapped"
+      ]
+    },
+    "checkins": {
+      "purpose": "Stores check-in records and kit release information",
+      "columns": {
+        "id": {
+          "type": "int(11)",
+          "null": false,
+          "key": "PRIMARY",
+          "default": null,
+          "extra": "auto_increment",
+          "description": "Primary key, unique identifier"
+        },
+        "member_id": {
+          "type": "varchar(50)",
+          "null": true,
+          "key": "INDEX",
+          "default": null,
+          "extra": "",
+          "description": "Member identification number"
+        },
+        "first_name": {
+          "type": "varchar(100)",
+          "null": false,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Member's first name"
+        },
+        "last_name": {
+          "type": "varchar(100)",
+          "null": false,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Member's last name"
+        },
+        "email_address": {
+          "type": "varchar(255)",
+          "null": true,
+          "key": "INDEX",
+          "default": null,
+          "extra": "",
+          "description": "Member's email address"
+        },
+        "checkin_time": {
+          "type": "datetime",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Timestamp when member checked in"
+        },
+        "kit_release_time": {
+          "type": "datetime",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Timestamp when kit was released"
+        },
+        "qr_code": {
+          "type": "varchar(255)",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "QR code for member identification"
+        },
+        "status": {
+          "type": "enum('pending','checked_in','kit_released')",
+          "null": true,
+          "key": "",
+          "default": "pending",
+          "extra": "",
+          "description": "Current status of the member"
+        }
+      },
+      "indexes": [
+        "PRIMARY KEY (id)",
+        "INDEX member_id (member_id)",
+        "INDEX email_address (email_address)"
+      ],
+      "business_rules": [
+        "checkin_time is set when member checks in",
+        "kit_release_time is set when kit is released to member",
+        "Status progresses: pending → checked_in → kit_released",
+        "QR codes are used for quick identification during check-in process"
+      ]
+    },
+    "users": {
+      "purpose": "Stores system user accounts and authentication data",
+      "columns": {
+        "id": {
+          "type": "int(11)",
+          "null": false,
+          "key": "PRIMARY",
+          "default": null,
+          "extra": "auto_increment",
+          "description": "Primary key, unique identifier"
+        },
+        "username": {
+          "type": "varchar(50)",
+          "null": false,
+          "key": "UNIQUE",
+          "default": null,
+          "extra": "",
+          "description": "Unique username for login"
+        },
+        "password_hash": {
+          "type": "varchar(255)",
+          "null": false,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Hashed password"
+        },
+        "email": {
+          "type": "varchar(255)",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "User's email address"
+        },
+        "role": {
+          "type": "enum('admin','user')",
+          "null": true,
+          "key": "",
+          "default": "user",
+          "extra": "",
+          "description": "User role/permission level"
+        },
+        "access_token": {
+          "type": "varchar(500)",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Session/API access token"
+        },
+        "created_at": {
+          "type": "timestamp",
+          "null": true,
+          "key": "",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "",
+          "description": "Account creation timestamp"
+        },
+        "last_login": {
+          "type": "timestamp",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Last successful login timestamp"
+        }
+      },
+      "indexes": [
+        "PRIMARY KEY (id)",
+        "UNIQUE KEY username (username)"
+      ],
+      "business_rules": [
+        "Username must be unique",
+        "Passwords are stored as hashed values (never plain text)",
+        "Access tokens are used for API authentication and session management",
+        "Admin role has full system access, user role has limited access"
+      ]
+    },
+    "food_releases": {
+      "purpose": "Tracks daily food releases to prevent duplicate distributions during the convention",
+      "columns": {
+        "id": {
+          "type": "int(11)",
+          "null": false,
+          "key": "PRIMARY",
+          "default": null,
+          "extra": "auto_increment",
+          "description": "Primary key, unique identifier"
+        },
+        "food_id": {
+          "type": "int(11)",
+          "null": false,
+          "key": "FOREIGN KEY",
+          "default": null,
+          "extra": "",
+          "description": "References food.id - which registrant received food"
+        },
+        "release_date": {
+          "type": "date",
+          "null": false,
+          "key": "INDEX",
+          "default": null,
+          "extra": "",
+          "description": "Date of food release (2025-10-16, 2025-10-17, or 2025-10-18)"
+        },
+        "release_time": {
+          "type": "datetime",
+          "null": false,
+          "key": "",
+          "default": "CURRENT_TIMESTAMP",
+          "extra": "",
+          "description": "Exact timestamp when food was released"
+        },
+        "released_by": {
+          "type": "int(11)",
+          "null": false,
+          "key": "FOREIGN KEY",
+          "default": null,
+          "extra": "",
+          "description": "References users.id - which staff member released the food"
+        },
+        "notes": {
+          "type": "text",
+          "null": true,
+          "key": "",
+          "default": null,
+          "extra": "",
+          "description": "Optional notes about the food release"
+        }
+      },
+      "indexes": [
+        "PRIMARY KEY (id)",
+        "FOREIGN KEY (food_id) REFERENCES food(id) ON DELETE CASCADE",
+        "FOREIGN KEY (released_by) REFERENCES users(id) ON DELETE RESTRICT",
+        "UNIQUE KEY unique_daily_release (food_id, release_date)",
+        "INDEX idx_release_date (release_date)",
+        "INDEX idx_food_id (food_id)"
+      ],
+      "business_rules": [
+        "Each registrant can only receive one food per day",
+        "Convention runs October 16-18, 2025 (3 days of food distribution)",
+        "Unique constraint prevents duplicate releases on same day to same registrant",
+        "Cascade delete: if food registration is deleted, all related releases are deleted",
+        "Restrict delete: cannot delete user who has released food (data integrity)"
+      ]
+    }
+  },
+  "views": {
+    "food_releases_view": {
+      "purpose": "Comprehensive view of food releases with registrant and staff details",
+      "description": "Joins food_releases, food, and users tables for easy reporting"
+    },
+    "food_release_status": {
+      "purpose": "Shows each registrant's release status for all 3 days",
+      "description": "Pivoted view showing day1_released, day2_released, day3_released, and can_release_today flag"
+    }
+  },
+  "endpoints": {
+    "food_registration": {
+      "fetchFoodData": {
+        "method": "POST",
+        "purpose": "DataTables server-side processing",
+        "file": "fetchFoodData.php"
+      },
+      "fetchAllFoodData": {
+        "method": "POST", 
+        "purpose": "Export all food data",
+        "file": "fetchAllFoodData.php"
+      },
+      "foodData": {
+        "method": "GET",
+        "purpose": "Dashboard statistics (total/unmapped counts)",
+        "file": "foodData.php"
+      },
+      "addFoodRegistration": {
+        "method": "POST",
+        "purpose": "Add new food registration",
+        "file": "addFoodRegistration.php"
+      },
+      "getFoodRegistration": {
+        "method": "GET",
+        "purpose": "Get single registration for editing",
+        "file": "getFoodRegistration.php"
+      },
+      "updateFoodRegistration": {
+        "method": "POST",
+        "purpose": "Update existing registration",
+        "file": "updateFoodRegistration.php"
+      },
+      "deleteFoodRegistration": {
+        "method": "POST",
+        "purpose": "Delete registration",
+        "file": "deleteFoodRegistration.php"
+      },
+      "getUnmappedFoodData": {
+        "method": "GET",
+        "purpose": "Get records without mapping",
+        "file": "getUnmappedFoodData.php"
+      },
+      "updateFoodMapping": {
+        "method": "POST",
+        "purpose": "Update mapping field for registration",
+        "file": "updateFoodMapping.php"
+      },
+      "releaseFoodToday": {
+        "method": "POST",
+        "purpose": "Release food to registrant for current date",
+        "file": "releaseFoodToday.php"
+      },
+      "getFoodReleaseStatus": {
+        "method": "GET",
+        "purpose": "Get release status for specific registrant",
+        "file": "getFoodReleaseStatus.php"
+      },
+      "getFoodReleasesData": {
+        "method": "POST",
+        "purpose": "DataTables server-side processing for release history",
+        "file": "getFoodReleasesData.php"
+      }
+    },
+    "checkins": {
+      "data": {
+        "method": "GET",
+        "purpose": "Dashboard statistics (checkins/kit releases)",
+        "file": "data.php"
+      },
+      "fetchCheckinsData": {
+        "method": "POST",
+        "purpose": "DataTables processing for checkins",
+        "file": "fetchCheckinsData.php"
+      },
+      "insertCheckinData": {
+        "method": "POST",
+        "purpose": "Add new check-in record",
+        "file": "insertCheckinData.php"
+      },
+      "deleteCheckin": {
+        "method": "POST",
+        "purpose": "Remove check-in record",
+        "file": "deleteCheckin.php"
+      }
+    },
+    "authentication": {
+      "loginScript": {
+        "method": "POST",
+        "purpose": "User authentication",
+        "file": "loginScript.php"
+      },
+      "renewToken": {
+        "method": "GET",
+        "purpose": "Refresh API access token",
+        "file": "renewToken.php"
+      },
+      "logout": {
+        "method": "GET",
+        "purpose": "End user session",
+        "file": "logout.php"
+      }
+    }
+  },
+  "external_apis": {
+    "psme_api": {
+      "url": "https://psme-api.smartpay.ph/public/index.php/api/postSearch",
+      "method": "POST",
+      "authentication": "Bearer token",
+      "parameters": {
+        "search": "Email address to search for",
+        "event_id": "Event identifier (currently 65)"
+      },
+      "response_structure": {
+        "resultKey": "1 for success",
+        "resultValue": "Array of matching records",
+        "errorCode": "0 for no error"
+      }
+    }
+  },
+  "dashboard_metrics": {
+    "food_registration": {
+      "total_food_registration": "SELECT COUNT(*) FROM food",
+      "total_unmapped": "SELECT COUNT(*) FROM food WHERE mapping IS NULL OR mapping = ''",
+      "total_releases_today": "SELECT COUNT(*) FROM food_releases WHERE release_date = CURDATE()",
+      "total_releases_day1": "SELECT COUNT(*) FROM food_releases WHERE release_date = '2025-10-16'",
+      "total_releases_day2": "SELECT COUNT(*) FROM food_releases WHERE release_date = '2025-10-17'",
+      "total_releases_day3": "SELECT COUNT(*) FROM food_releases WHERE release_date = '2025-10-18'",
+      "eligible_for_release_today": "SELECT COUNT(*) FROM food f LEFT JOIN food_releases fr ON f.id = fr.food_id AND fr.release_date = CURDATE() WHERE fr.id IS NULL"
+    },
+    "checkins": {
+      "total_checked_in": "SELECT COUNT(*) FROM checkins WHERE checkin_time IS NOT NULL",
+      "total_released_kits": "SELECT COUNT(*) FROM checkins WHERE kit_release_time IS NOT NULL"
+    }
+  }
+}

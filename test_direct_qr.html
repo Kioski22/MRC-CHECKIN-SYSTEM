@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct QR Code Test</title>
+</head>
+<body>
+    <h1>Direct QR Code Access Test</h1>
+    
+    <h2>Testing QR Code Files:</h2>
+    
+    <div style="margin: 20px 0;">
+        <h3>Test 1: uploads/qrcode/ICTO-284789.png</h3>
+        <img src="uploads/qrcode/ICTO-284789.png" style="width: 200px; height: 200px; border: 1px solid #000;" 
+             onload="document.getElementById('result1').innerHTML = 'SUCCESS: File loaded correctly';" 
+             onerror="document.getElementById('result1').innerHTML = 'FAILED: Could not load file';">
+        <p id="result1" style="font-weight: bold;"></p>
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <h3>Test 2: ./uploads/qrcode/ICTO-340839.png</h3>
+        <img src="./uploads/qrcode/ICTO-340839.png" style="width: 200px; height: 200px; border: 1px solid #000;" 
+             onload="document.getElementById('result2').innerHTML = 'SUCCESS: File loaded correctly';" 
+             onerror="document.getElementById('result2').innerHTML = 'FAILED: Could not load file';">
+        <p id="result2" style="font-weight: bold;"></p>
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <h3>Test 3: Direct browser access test</h3>
+        <p>Click these links to test direct file access:</p>
+        <ul>
+            <li><a href="uploads/qrcode/ICTO-284789.png" target="_blank">uploads/qrcode/ICTO-284789.png</a></li>
+            <li><a href="./uploads/qrcode/ICTO-340839.png" target="_blank">./uploads/qrcode/ICTO-340839.png</a></li>
+            <li><a href="/checkin/uploads/qrcode/ICTO-380372.png" target="_blank">/checkin/uploads/qrcode/ICTO-380372.png</a></li>
+        </ul>
+    </div>
+    
+    <script>
+        console.log('QR Code test page loaded');
+        
+        // Test different QR code URLs programmatically
+        function testQrUrl(url, resultElementId) {
+            const img = new Image();
+            img.onload = function() {
+                console.log('SUCCESS: ' + url);
+                document.getElementById(resultElementId).innerHTML = 'SUCCESS: ' + url;
+                document.getElementById(resultElementId).style.color = 'green';
+            };
+            img.onerror = function() {
+                console.log('FAILED: ' + url);
+                document.getElementById(resultElementId).innerHTML = 'FAILED: ' + url;
+                document.getElementById(resultElementId).style.color = 'red';
+            };
+            img.src = url;
+        }
+        
+        // Wait for page to load then run tests
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                testQrUrl('uploads/qrcode/ICTO-539013.png', 'jstest1');
+                testQrUrl('./uploads/qrcode/ICTO-559369.png', 'jstest2');
+                testQrUrl('/checkin/uploads/qrcode/ICTO-661293.png', 'jstest3');
+            }, 1000);
+        });
+    </script>
+    
+    <div style="margin: 20px 0;">
+        <h3>JavaScript Test Results:</h3>
+        <p id="jstest1" style="font-weight: bold;"></p>
+        <p id="jstest2" style="font-weight: bold;"></p>
+        <p id="jstest3" style="font-weight: bold;"></p>
+    </div>
+</body>
+</html>

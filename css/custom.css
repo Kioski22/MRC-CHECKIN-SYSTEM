@@ -1,0 +1,74 @@
+.bg-gradient-natcon {
+  background: linear-gradient(135deg, #2b3a67 0%, #4b0082 50%, #ffd700 100%);
+  color: #fff;
+}
+
+.bg-gradient-natcon-bluegold {
+  background: linear-gradient(90deg, #3b5998 0%, #4e73df 50%, #d4af37 100%);
+  color: #fff;
+}
+
+.bg-gradient-ocean {
+  background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+  color: #fff;
+}
+
+.bg-gradient-sunset {
+  background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+  color: #fff;
+}
+
+.bg-gradient-forest {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: #fff;
+}
+
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+  color: #fff;
+}
+
+.bg-gradient-gold {
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  color: #fff;
+}
+
+.bg-gradient-red {
+  background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+  color: #fff;
+}
+
+.bg-gradient-green {
+  background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+  color: #fff;
+}
+
+.bg-gradient-blue {
+  background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+  color: #fff;
+}
+
+.bg-gradient-yellow {
+  background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+  color: #fff;
+}
+
+.bg-gradient-pink {
+  background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%);
+  color: #fff;
+}
+
+.bg-gradient-teal {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: #fff;
+}
+
+.bg-gradient-orange {
+  background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+  color: #fff;
+}
+
+.bg-gradient-gray {
+  background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);
+  color: #fff;
+}
