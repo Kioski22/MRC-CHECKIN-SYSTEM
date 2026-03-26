@@ -40,7 +40,7 @@ include 'functions.php';
     <!-- Custom styles for this template-->
     <link href="css/sb-admin-2.min.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
-    <script src="js\html5-qrcode.min.js"></script>
+    <script src="js/html5-qrcode.min.js"></script>
 </head>
 
 <body id="page-top">
@@ -654,7 +654,7 @@ include 'functions.php';
             // QR code is still being displayed but not included in the POST request
             const qrcode = document.getElementById('modalQrcodeLink').href;
 
-            fetch('checkinscript', {
+            fetch('checkinscript.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -705,7 +705,7 @@ include 'functions.php';
             }
 
             try {
-                const response = await fetch('releasekit', {
+                const response = await fetch('releasekit.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
