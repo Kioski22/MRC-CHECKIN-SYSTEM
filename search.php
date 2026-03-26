@@ -77,7 +77,7 @@ include 'functions.php';
                                 </div>
                                 <div class="card-body">
                                     <input type="text" id="searchInput" class="form-control mb-3" placeholder="Enter name, email address, or PRC ID">
-                                    <button id="searchButton" class="btn btn-primary">Search</button>
+                                    <button id="searchButton" type="button" class="btn btn-primary" onclick="handleSearchClick()">Search</button>
                                     <div id="searchStatus" class="mt-3"></div>
                                 </div>
                             </div>
@@ -291,7 +291,7 @@ include 'functions.php';
             document.getElementById('searchResultsCard').style.display = 'none';
         }
 
-        document.getElementById('searchButton').addEventListener('click', async () => {
+        async function handleSearchClick() {
             const searchValue = document.getElementById('searchInput').value;
             if (searchValue) {
                 await makeApiRequest(searchValue);
@@ -299,12 +299,24 @@ include 'functions.php';
                 clearSearchResults();
                 setSearchStatus('Search box is empty.', 'warning');
             }
-        });
+        }
 
-        document.getElementById('searchInput').addEventListener('keydown', async (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                document.getElementById('searchButton').click();
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchButton = document.getElementById('searchButton');
+            const searchInput = document.getElementById('searchInput');
+
+            if (searchButton && !searchButton.dataset.listenerAttached) {
+                searchButton.addEventListener('click', handleSearchClick);
+                searchButton.dataset.listenerAttached = 'true';
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('keydown', async (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        await handleSearchClick();
+                    }
+                });
             }
         });
 
@@ -338,7 +350,13 @@ include 'functions.php';
         }
 
         async function makeApiRequest(searchValue) {
+            const searchButton = document.getElementById('searchButton');
             try {
+                if (searchButton) {
+                    searchButton.disabled = true;
+                    searchButton.innerText = 'Searching...';
+                }
+
                 clearSearchStatus();
                 clearSearchResults();
                 setSearchStatus('Searching registration records...', 'info');
@@ -361,6 +379,11 @@ include 'functions.php';
                 console.error('Error:', error);
                 clearSearchResults();
                 setSearchStatus(`Search failed: ${error.message}`, 'danger');
+            } finally {
+                if (searchButton) {
+                    searchButton.disabled = false;
+                    searchButton.innerText = 'Search';
+                }
             }
         }
 
@@ -733,7 +756,9 @@ include 'functions.php';
     </script>
 
     <script>
-        feather.replace();
+        if (window.feather && typeof window.feather.replace === 'function') {
+            window.feather.replace();
+        }
     </script>
 </body>
 
