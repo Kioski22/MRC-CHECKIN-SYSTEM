@@ -462,14 +462,38 @@ include 'functions.php';
                 tableBody.innerHTML = '';
                 resultValuesGlobal.forEach((result, index) => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `
-                    <td>${result.firstname || 'N/A'}</td>
-                    <td>${result.lastname || 'N/A'}</td>
-                    <td>${result.email || 'N/A'}</td>
-                    <td>${result.chapter || 'N/A'}</td>
-                    <td>${result.RegistrationType || 'N/A'}</td>
-                    <td><button class="btn btn-primary" onclick="showModalWithIndex(${index})">View</button></td>
-                `;
+
+                    const firstnameCell = document.createElement('td');
+                    firstnameCell.textContent = result.firstname || 'N/A';
+
+                    const lastnameCell = document.createElement('td');
+                    lastnameCell.textContent = result.lastname || 'N/A';
+
+                    const emailCell = document.createElement('td');
+                    emailCell.textContent = result.email || 'N/A';
+
+                    const chapterCell = document.createElement('td');
+                    chapterCell.textContent = result.chapter || 'N/A';
+
+                    const registrationTypeCell = document.createElement('td');
+                    registrationTypeCell.textContent = result.RegistrationType || 'N/A';
+
+                    const actionCell = document.createElement('td');
+                    const viewButton = document.createElement('button');
+                    viewButton.type = 'button';
+                    viewButton.className = 'btn btn-primary';
+                    viewButton.textContent = 'View';
+                    viewButton.addEventListener('click', () => {
+                        showModalWithIndex(index);
+                    });
+                    actionCell.appendChild(viewButton);
+
+                    row.appendChild(firstnameCell);
+                    row.appendChild(lastnameCell);
+                    row.appendChild(emailCell);
+                    row.appendChild(chapterCell);
+                    row.appendChild(registrationTypeCell);
+                    row.appendChild(actionCell);
                     tableBody.appendChild(row);
                 });
                 document.getElementById('searchResultsCard').style.display = 'block';
@@ -581,6 +605,8 @@ include 'functions.php';
                 namePart += ` ${middlename}`;
             }
 
+            const qrFallbackMarkup = '<div style="width:33mm;height:33mm;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:8px;color:#666;text-align:center;">QR Code<br>Not Available</div>';
+
             const printContent = `
             <div style="width: 75mm; height: 105mm; position: relative; margin: 0; padding: 0; box-sizing: border-box;">
                 <div style="position: absolute; width: 100mm; height: 70mm; background: #fff; transform: rotate(90deg); left: -12.5mm; top: 17.5mm; font-size: 16px; font-weight: 600; line-height: 1.1; padding: 0; box-sizing: border-box; font-family: 'Arial', 'Helvetica', sans-serif;">
@@ -595,10 +621,8 @@ include 'functions.php';
                 </p>
 
                 <!-- QR Code - FIXED POSITION -->
-                <div style="position: absolute; bottom: 4mm; right: 4mm; width: 35mm; height: 35mm; display: flex; justify-content: center; align-items: center; box-sizing: border-box; z-index: 10;">
-                    <img src="${qrcodeLink}" alt="QR Code" style="width: 33mm; height: 33mm; box-sizing: border-box;" 
-                         onload="console.log('QR Code loaded successfully');"
-                         onerror="this.style.display='none'; this.parentNode.innerHTML='<div style=&quot;width:33mm;height:33mm;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:8px;color:#666;text-align:center;&quot;>QR Code<br>Not Available</div>';">
+                <div id="printQrContainer" style="position: absolute; bottom: 4mm; right: 4mm; width: 35mm; height: 35mm; display: flex; justify-content: center; align-items: center; box-sizing: border-box; z-index: 10;">
+                    <img id="printQrImage" src="${qrcodeLink}" alt="QR Code" style="width: 33mm; height: 33mm; box-sizing: border-box;">
                 </div>
                 </div>
             </div>`;
@@ -635,12 +659,71 @@ include 'functions.php';
                 }
             </style>
             </head>
-            <body onload="window.print(); window.close();">
+            <body>
             ${printContent}
             </body>
             </html>
         `);
             printWindow.document.close();
+
+            const finalizePrint = () => {
+                if (printWindow.closed) {
+                    return;
+                }
+
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            };
+
+            const qrContainer = printWindow.document.getElementById('printQrContainer');
+            const qrImage = printWindow.document.getElementById('printQrImage');
+            let printTriggered = false;
+
+            const triggerPrintOnce = () => {
+                if (printTriggered) {
+                    return;
+                }
+
+                printTriggered = true;
+                printWindow.setTimeout(finalizePrint, 150);
+            };
+
+            const showQrFallback = () => {
+                if (!qrContainer) {
+                    triggerPrintOnce();
+                    return;
+                }
+
+                qrContainer.innerHTML = qrFallbackMarkup;
+                triggerPrintOnce();
+            };
+
+            if (!qrImage) {
+                triggerPrintOnce();
+                return;
+            }
+
+            qrImage.addEventListener('load', () => {
+                console.log('QR Code loaded successfully');
+                triggerPrintOnce();
+            });
+
+            qrImage.addEventListener('error', () => {
+                console.warn('QR Code failed to load for printing');
+                showQrFallback();
+            });
+
+            if (qrImage.complete) {
+                if (typeof qrImage.naturalWidth === 'number' && qrImage.naturalWidth > 0) {
+                    triggerPrintOnce();
+                } else {
+                    showQrFallback();
+                }
+                return;
+            }
+
+            printWindow.setTimeout(triggerPrintOnce, 1500);
         }
 
         function checkIn() {
