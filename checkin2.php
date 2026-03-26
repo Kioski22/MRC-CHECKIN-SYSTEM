@@ -1308,11 +1308,12 @@ Protocol: ${location.protocol}
 
         async function getRegistrationOrder(email, eventId = 16) {
             try {
-                const response = await fetch(`https://psme-api.smartpay.ph/public/index.php/api/getRegisterMember?event_id=${eventId}`, {
-                    method: 'GET',
+                const response = await fetch('getRegistrationOrder', {
+                    method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + <?php echo json_encode(isset($_SESSION['access_token']) ? $_SESSION['access_token'] : ''); ?>
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `email=${encodeURIComponent(email || '')}&event_id=${encodeURIComponent(eventId)}`
                 });
 
                 if (!response.ok) {
@@ -1322,30 +1323,20 @@ Protocol: ${location.protocol}
 
                 const data = await response.json();
 
-                if (data.resultKey !== 1 || !Array.isArray(data.resultValue)) {
-                    console.warn('Unexpected resultKey or invalid registration data');
+                if (!data.success) {
+                    console.warn(data.message || 'Registration order lookup failed');
                     return { display: null, order: null, total: 0 };
                 }
 
-                const total = data.resultValue.length;
-                const lowerEmail = (email || '').trim().toLowerCase();
-                let order = null;
-
-                for (let i = 0; i < total; i++) {
-                    const regEmail = (data.resultValue[i].email || '').trim().toLowerCase();
-                    if (regEmail === lowerEmail) {
-                        order = i + 1;
-                        break;
-                    }
-                }
+                const total = Number(data.total || 0);
+                const order = data.order !== null ? Number(data.order) : null;
 
                 if (order === null) {
-                    console.warn(`Email ${lowerEmail} not found in ${total} entries`);
                     return { display: "Not found in list", order: null, total };
                 }
 
                 // Format with commas and ordinal suffix
-                const formattedOrder = getOrdinal(order.toLocaleString());
+                const formattedOrder = getOrdinal(order);
                 const display = `${formattedOrder} Registrant`;
 
                 return { display, order, total };
@@ -1358,6 +1349,9 @@ Protocol: ${location.protocol}
 
         // Helper for ordinal suffix
         function getOrdinal(n) {
+            if (!Number.isFinite(n)) {
+                return n;
+            }
             const s = ["th", "st", "nd", "rd"];
             const v = n % 100;
             const suffix = s[(v - 20) % 10] || s[v] || s[0];
