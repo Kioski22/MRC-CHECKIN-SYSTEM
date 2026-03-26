@@ -2,6 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 require('dbConnection.php');  // Include your database connection file
+require __DIR__ . '/smartpayAuth.php';
 
 // Initialize response array
 $response = [
@@ -81,11 +82,35 @@ function searchLocalRegistrations($db, $searchTerm) {
 }
 
 function searchExternalRegistrations($searchTerm) {
-    if (!isset($_SESSION['access_token']) || empty($_SESSION['access_token'])) {
+    $tokenError = null;
+    $accessToken = smartpayEnsureSessionToken($tokenError);
+    if ($accessToken === null) {
+        error_log('ictosearch could not get access token: ' . $tokenError);
         return [];
     }
 
-    $apiUrl = 'https://psme-api.smartpay.ph/public/index.php/api/postSearch?search=' . urlencode($searchTerm) . '&event_id=65';
+    $externalResults = executeExternalSearchRequest($searchTerm, $accessToken, $httpCode, $curlError);
+
+    if ($httpCode === 401) {
+        $accessToken = smartpayEnsureSessionToken($tokenError, true);
+        if ($accessToken === null) {
+            error_log('ictosearch token refresh failed: ' . $tokenError);
+            return [];
+        }
+
+        $externalResults = executeExternalSearchRequest($searchTerm, $accessToken, $httpCode, $curlError);
+    }
+
+    if ($externalResults === null) {
+        error_log('ictosearch external search failed. HTTP code: ' . $httpCode . ' Error: ' . $curlError);
+        return [];
+    }
+
+    return $externalResults;
+}
+
+function executeExternalSearchRequest($searchTerm, $accessToken, &$httpCode, &$curlError) {
+    $apiUrl = SMARTPAY_API_BASE_URL . '/postSearch?search=' . urlencode($searchTerm) . '&event_id=65';
     $ch = curl_init();
 
     curl_setopt_array($ch, [
@@ -93,7 +118,7 @@ function searchExternalRegistrations($searchTerm) {
         CURLOPT_POST => true,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER => [
-            'Authorization: Bearer ' . $_SESSION['access_token'],
+            'Authorization: Bearer ' . $accessToken,
             'Accept: application/json'
         ],
         CURLOPT_TIMEOUT => 15,
@@ -108,8 +133,7 @@ function searchExternalRegistrations($searchTerm) {
     curl_close($ch);
 
     if ($response === false || $curlError || $httpCode !== 200) {
-        error_log('ictosearch external search failed. HTTP code: ' . $httpCode . ' Error: ' . $curlError);
-        return [];
+        return null;
     }
 
     $decoded = json_decode($response, true);

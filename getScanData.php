@@ -1,6 +1,7 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+require __DIR__ . '/smartpayAuth.php';
 
 // Check authentication
 if (!isset($_SESSION['access_token'])) {
@@ -24,28 +25,21 @@ if (!isset($_POST['qrcode'])) {
 
 $qrcode = $_POST['qrcode'];
 
-try {
-    // Get access token for external API
-    $access_token = $_SESSION['access_token'];
-    
-    // External API endpoint for QR code lookup with query parameters
-    $api_url = 'https://psme-api.smartpay.ph/public/index.php/api/getScanData?' . http_build_query([
+function executeScanLookup($qrcode, $accessToken, &$httpCode, &$curlError)
+{
+    $api_url = SMARTPAY_API_BASE_URL . '/getScanData?' . http_build_query([
         'scan' => $qrcode,
         'event_id' => 65
     ]);
-    
-    // Log the request for debugging
+
     error_log("getScanData request URL: " . $api_url);
-    
-    // Initialize cURL
+
     $ch = curl_init();
-    
-    // Set cURL options for GET request
     curl_setopt_array($ch, [
         CURLOPT_URL => $api_url,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER => [
-            'Authorization: Bearer ' . $access_token,
+            'Authorization: Bearer ' . $accessToken,
             'Accept: application/json'
         ],
         CURLOPT_TIMEOUT => 30,
@@ -53,20 +47,39 @@ try {
         CURLOPT_SSL_VERIFYPEER => true,
         CURLOPT_USERAGENT => 'PSME-ICTO/1.0'
     ]);
-    
-    // Execute the request
+
     $response = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curl_error = curl_error($ch);
-    
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
-    
-    // Check for cURL errors
-    if ($curl_error) {
-        throw new Exception('Network error: ' . $curl_error);
+
+    if ($response === false || $curlError) {
+        throw new Exception('Network error: ' . ($curlError ?: 'Unknown cURL failure'));
     }
-    
-    // Check HTTP response code
+
+    return $response;
+}
+
+try {
+    $tokenError = null;
+    $access_token = smartpayEnsureSessionToken($tokenError);
+    if ($access_token === null) {
+        throw new Exception($tokenError ?? 'Unable to retrieve access token');
+    }
+
+    $response = executeScanLookup($qrcode, $access_token, $http_code, $curl_error);
+
+    if ($http_code === 401) {
+        $access_token = smartpayEnsureSessionToken($tokenError, true);
+        if ($access_token === null) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => $tokenError ?? 'Unauthorized']);
+            exit();
+        }
+
+        $response = executeScanLookup($qrcode, $access_token, $http_code, $curl_error);
+    }
+
     if ($http_code !== 200) {
         throw new Exception('API request failed with HTTP code: ' . $http_code);
     }

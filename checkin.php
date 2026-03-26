@@ -1254,11 +1254,12 @@ Protocol: ${location.protocol}
             showLoadingIndicator();
 
             try {
-                const response = await fetch(`https://psme-api.smartpay.ph/public/index.php/api/getScanData?scan=${scannedValue}&event_id=65`, {
-                    method: 'GET',
+                const response = await fetch('getScanData', {
+                    method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer ' + <?php echo json_encode(isset($_SESSION['access_token']) ? $_SESSION['access_token'] : ''); ?>
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `qrcode=${encodeURIComponent(scannedValue)}`
                 });
 
                 if (response.status === 401) {
@@ -1385,11 +1386,12 @@ Protocol: ${location.protocol}
             showLoadingIndicator();
 
             try {
-                const response = await fetch(`https://psme-api.smartpay.ph/public/index.php/api/getScanData?scan=${scannedValue}&event_id=65`, {
-                    method: 'GET',
+                const response = await fetch('getScanData', {
+                    method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${newToken}`
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `qrcode=${encodeURIComponent(scannedValue)}`
                 });
 
                 if (response.status === 401) {
