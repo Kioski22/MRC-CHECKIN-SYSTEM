@@ -78,6 +78,7 @@ include 'functions.php';
                                 <div class="card-body">
                                     <input type="text" id="searchInput" class="form-control mb-3" placeholder="Enter name, email address, or PRC ID">
                                     <button id="searchButton" class="btn btn-primary">Search</button>
+                                    <div id="searchStatus" class="mt-3"></div>
                                 </div>
                             </div>
 
@@ -261,17 +262,54 @@ include 'functions.php';
     <script>
         let resultValuesGlobal = [];
 
+        function setSearchStatus(message, type = 'info') {
+            const searchStatus = document.getElementById('searchStatus');
+            if (!searchStatus) {
+                return;
+            }
+
+            const alertClass = {
+                info: 'alert-info',
+                success: 'alert-success',
+                warning: 'alert-warning',
+                danger: 'alert-danger'
+            }[type] || 'alert-info';
+
+            searchStatus.innerHTML = `<div class="alert ${alertClass} mb-0" role="alert">${message}</div>`;
+        }
+
+        function clearSearchStatus() {
+            const searchStatus = document.getElementById('searchStatus');
+            if (searchStatus) {
+                searchStatus.innerHTML = '';
+            }
+        }
+
+        function clearSearchResults() {
+            resultValuesGlobal = [];
+            document.getElementById('searchResultsTable').innerHTML = '';
+            document.getElementById('searchResultsCard').style.display = 'none';
+        }
+
         document.getElementById('searchButton').addEventListener('click', async () => {
             const searchValue = document.getElementById('searchInput').value;
             if (searchValue) {
                 await makeApiRequest(searchValue);
             } else {
-                alert('Search box is empty!');
+                clearSearchResults();
+                setSearchStatus('Search box is empty.', 'warning');
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('keydown', async (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                document.getElementById('searchButton').click();
             }
         });
 
         function insertCheckinData(data) {
-            fetch('insertCheckinData', {
+            fetch('insertCheckinData.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -301,58 +339,28 @@ include 'functions.php';
 
         async function makeApiRequest(searchValue) {
             try {
-                // Define the API endpoint
-                const apiUrl = `https://psme-api.smartpay.ph/public/index.php/api/postSearch?search=${searchValue}&event_id=65`;
-                const phpUrl = 'ictosearch';
+                clearSearchStatus();
+                clearSearchResults();
+                setSearchStatus('Searching registration records...', 'info');
 
-                // Fetch responses
-                const [apiResponse, phpResponse] = await Promise.all([
-                    fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer <?php echo $_SESSION['access_token']; ?>'
-                        }
-                    }),
-                    fetch(phpUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `search_term=${encodeURIComponent(searchValue)}`
-                    })
-                ]);
+                const response = await fetch('ictosearch.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `search_term=${encodeURIComponent(searchValue)}`
+                });
 
-                // Check if apiResponse is unauthorized and attempt renewal
-                if (apiResponse.status === 401) {
-                    try {
-                        const newToken = await renewAccessToken();
-                        return await makeApiRequestWithNewToken(searchValue, newToken);
-                    } catch (error) {
-                        console.error('Error renewing token:', error);
-                        document.getElementById('result').innerText += `\nError: Failed to renew token. ${error.message}`;
-                        return;
-                    }
+                if (!response.ok) {
+                    throw new Error(`Search request failed with status ${response.status}`);
                 }
 
-                // If both responses are OK, parse and combine their data
-                if (apiResponse.ok && phpResponse.ok) {
-                    const apiData = await apiResponse.json();
-                    const phpData = await phpResponse.json();
-
-                    const combinedData = {
-                        resultKey: 1,
-                        resultValue: [...(apiData.resultValue || []), ...(phpData.resultValue || [])],
-                        errorCode: 0,
-                        errorMsg: ""
-                    };
-
-                    handleScanData(combinedData);
-                } else {
-                    throw new Error(`Unexpected response status. API: ${apiResponse.status}, PHP: ${phpResponse.status}`);
-                }
+                const data = await response.json();
+                handleScanData(data);
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('result').innerText += `\nError: ${error.message}`;
+                clearSearchResults();
+                setSearchStatus(`Search failed: ${error.message}`, 'danger');
             }
         }
 
@@ -365,7 +373,7 @@ include 'functions.php';
             }
 
             try {
-                const response = await fetch('releasemsp', {
+                const response = await fetch('releasemsp.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -423,65 +431,6 @@ include 'functions.php';
 
         }
 
-        async function makeApiRequestWithNewToken(searchValue, newToken) {
-            try {
-                const apiUrl = `https://psme-api.smartpay.ph/public/index.php/api/postSearch?search=${searchValue}&event_id=65`;
-                const phpUrl = 'ictosearch';
-
-                const [apiResponse, phpResponse] = await Promise.all([
-                    fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${newToken}`
-                        }
-                    }),
-                    fetch(phpUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `search_term=${encodeURIComponent(searchValue)}`
-                    })
-                ]);
-
-                if (apiResponse.ok && phpResponse.ok) {
-                    const apiData = await apiResponse.json();
-                    const phpData = await phpResponse.json();
-
-                    const combinedData = {
-                        resultKey: 1,
-                        resultValue: [...(apiData.resultValue || []), ...(phpData.resultValue || [])],
-                        errorCode: 0,
-                        errorMsg: ""
-                    };
-
-                    handleScanData(combinedData);
-                } else {
-                    document.getElementById('result').innerText += `\nError: Unexpected response status after token renewal.`;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('result').innerText += `\nError: ${error.message}`;
-            }
-        }
-
-        async function renewAccessToken() {
-            try {
-                const response = await fetch('renewToken');
-                if (!response.ok) {
-                    throw new Error(`Failed to renew token. Status code: ${response.status}`);
-                }
-                const data = await response.json();
-                if (data.access_token) {
-                    return data.access_token;
-                } else {
-                    throw new Error('Failed to get new token');
-                }
-            } catch (error) {
-                throw error;
-            }
-        }
-
 
         function handleScanData(data) {
             if (data.resultValue && data.resultValue.length > 0) {
@@ -501,8 +450,10 @@ include 'functions.php';
                     tableBody.appendChild(row);
                 });
                 document.getElementById('searchResultsCard').style.display = 'block';
+                setSearchStatus(`Found ${data.resultValue.length} matching registration record(s).`, 'success');
             } else {
-                alert(data.errorMsg || 'No valid data found');
+                clearSearchResults();
+                setSearchStatus(data.errorMsg || 'No valid data found.', 'warning');
             }
         }
 

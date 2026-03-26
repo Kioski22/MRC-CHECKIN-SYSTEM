@@ -797,6 +797,18 @@ Protocol: ${location.protocol}
             try {
                 console.log('Starting Html5QrcodeScanner...');
 
+                if (typeof Html5QrcodeScanner === 'undefined') {
+                    throw new Error('The QR scanner library did not load. Check whether js/html5-qrcode.min.js is accessible on the hosted site.');
+                }
+
+                if (!window.isSecureContext) {
+                    throw new Error('Camera access is blocked because this page is not running in a secure context. Use HTTPS directly and avoid embedded iframes.');
+                }
+
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Camera API is unavailable in this browser context. This usually means HTTPS is missing or camera access is blocked by browser or hosting policy.');
+                }
+
                 // Stop any existing scanner first
                 if (html5QrcodeScanner) {
                     console.log('Cleaning up existing scanner...');
@@ -860,6 +872,10 @@ Protocol: ${location.protocol}
                     errorMessage = 'No camera found on this device.';
                 } else if (err.name === 'NotReadableError') {
                     errorMessage = 'Camera is already in use by another application.';
+                } else if (!window.isSecureContext) {
+                    errorMessage = 'Camera permission prompt cannot appear because the page is not in a secure HTTPS context. Open the site using HTTPS directly on your GoDaddy domain.';
+                } else if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    errorMessage = 'The browser is not exposing the camera API. Check HTTPS, browser permissions, and whether the page is opened inside an iframe or app webview.';
                 }
 
                 document.getElementById('result').innerHTML = `<span style="color: red;"><i class="fas fa-exclamation-triangle mr-2"></i>${errorMessage}</span>`;
