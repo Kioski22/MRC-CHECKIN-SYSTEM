@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include 'dbConnection.php';
 
@@ -36,7 +36,7 @@ if ($registration_success) {
     <meta name="author" content="">
 
     <title>Register Individual | MINDANAO REGIONAL CONFERENCE</title>
-    <link rel="icon" href="img/logo.ico" type="image/icon type">
+    <link rel="icon" href="img/73rdNatCon.jpg" type="image/jpeg">
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -258,7 +258,7 @@ if ($registration_success) {
                                                 <div class="form-group" id="pricing">
                                                     <p><strong>Registration Fee:</strong></p>
                                                     <strong>
-                                                        <h1 id="price_detail">₱0.00</h1>
+                                                        <h1 id="price_detail">â‚±0.00</h1>
                                                     </strong>
                                                 </div>
                                                 <div class="form-group">
@@ -327,7 +327,7 @@ if ($registration_success) {
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">Ã—</span>
                     </button>
                 </div>
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
@@ -594,7 +594,7 @@ if ($registration_success) {
             const membershipSelect = document.getElementById("membership_type");
             const selectedValue = membershipSelect.value;
             const priceDetail = document.getElementById("price_detail");
-            const currentPrice = parseFloat(priceDetail.textContent.replace(/[₱,]/g, '')); // Parse the current price as a number
+            const currentPrice = parseFloat(priceDetail.textContent.replace(/[â‚±,]/g, '')); // Parse the current price as a number
 
             // Define which membership types allow which discounts
             const allowedDiscounts = {
@@ -611,7 +611,7 @@ if ($registration_success) {
                 if (discountCheckbox.checked) {
                     if (discountType === 'free') {
                         // If Free is checked, set price to 0 and disable payment
-                        priceDetail.textContent = "₱0.00";
+                        priceDetail.textContent = "â‚±0.00";
                         //document.getElementById('accept_payment_button').disabled = true;
                         showDiscountToast(`Registration fee waived for this participant.`, `Free Registration`);
                     } else {
@@ -622,7 +622,7 @@ if ($registration_success) {
                                 showDiscountToast('No further discounts can be applied. Maximum discount reached.', 'Discount Not Applicable');
                             } else {
                                 // Apply discount and reduce price to 2800
-                                priceDetail.textContent = "₱2,800.00";
+                                priceDetail.textContent = "â‚±2,800.00";
                                 showDiscountToast(`${discountName} discount applied.`, 'Registration Fee Updated');
                             }
                         }
@@ -664,7 +664,7 @@ if ($registration_success) {
                 freeReasonInput.required = true;
 
                 // Set the price to 0.00 and disable payment button
-                document.getElementById('price_detail').textContent = "₱0.00";
+                document.getElementById('price_detail').textContent = "â‚±0.00";
                 //document.getElementById('accept_payment_button').disabled = true;
             } else {
                 // Hide the reason input and remove the required attribute
@@ -705,24 +705,24 @@ if ($registration_success) {
             // Set the pricing based on the membership type and discount status
             switch (membershipType) {
                 case "1": // Life / Associate Member
-                    priceDetail.textContent = discountApplied ? "₱2,800.00" : "₱2,800.00";
+                    priceDetail.textContent = discountApplied ? "â‚±2,800.00" : "â‚±2,800.00";
                     break;
                 case "2": // Guest / Non-member
                     if (document.getElementById("new_board_passer").checked) {
-                        priceDetail.textContent = "₱2,800.00"; // Discounted price for Guest / Non-member if New Board Passer discount is applied
+                        priceDetail.textContent = "â‚±2,800.00"; // Discounted price for Guest / Non-member if New Board Passer discount is applied
                     } else {
-                        priceDetail.textContent = "₱4,500.00"; // Regular price for Guest / Non-member
+                        priceDetail.textContent = "â‚±4,500.00"; // Regular price for Guest / Non-member
                     }
                     break;
                 case "3": // Regular Member
                     if (discountApplied) {
-                        priceDetail.textContent = "₱2,800.00"; // Discounted price for Regular Member if discount is applied
+                        priceDetail.textContent = "â‚±2,800.00"; // Discounted price for Regular Member if discount is applied
                     } else {
-                        priceDetail.textContent = "₱3,500.00"; // Regular price for Regular Member
+                        priceDetail.textContent = "â‚±3,500.00"; // Regular price for Regular Member
                     }
                     break;
                 default:
-                    priceDetail.textContent = "₱0.00"; // Default price if nothing is selected
+                    priceDetail.textContent = "â‚±0.00"; // Default price if nothing is selected
             }
 
             //document.getElementById('accept_payment_button').disabled = false; // Enable payment button when not Free
@@ -890,7 +890,7 @@ if ($registration_success) {
             const priceDetail = document.getElementById("price_detail").innerText;
 
             // Extract the numerical value from the price detail (removing the currency symbol)
-            const registrationFee = parseFloat(priceDetail.replace(/[₱,]/g, ''));
+            const registrationFee = parseFloat(priceDetail.replace(/[â‚±,]/g, ''));
 
             // Set the registration fee as a hidden input value
             const hiddenInput = document.createElement('input');

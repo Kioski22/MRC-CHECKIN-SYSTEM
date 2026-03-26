@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include 'dbConnection.php';
 
@@ -29,7 +29,7 @@ include 'functions.php';
     <meta name="author" content="">
 
     <title>Check In | MINDANAO REGIONAL CONFERENCE</title>
-    <link rel="icon" href="img/logo.ico" type="image/icon type">
+    <link rel="icon" href="img/73rdNatCon.jpg" type="image/jpeg">
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -246,7 +246,7 @@ include 'functions.php';
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="scanResultModalLabel">Scan Result</h5>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
+                                        <span aria-hidden="true">Ã—</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
@@ -286,7 +286,7 @@ include 'functions.php';
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="editPrintModalLabel">Edit Information Before Print</h5>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">×</span>
+                                        <span aria-hidden="true">Ã—</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
@@ -329,7 +329,7 @@ include 'functions.php';
                             <div class="modal-header">
                                 <h5 class="modal-title" id="checkinResultModalLabel">Result</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">×</span>
+                                    <span aria-hidden="true">Ã—</span>
                                 </button>
                             </div>
                             <div class="modal-body">
@@ -378,7 +378,7 @@ include 'functions.php';
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">Ã—</span>
                     </button>
                 </div>
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
@@ -624,13 +624,13 @@ Protocol: ${location.protocol}
                 return;
             }
 
-            console.log('🔍 Testing QR Detection Settings...');
+            console.log('ðŸ” Testing QR Detection Settings...');
 
             // Get video element to analyze current feed
             const video = document.querySelector('#html5qr-reader video');
             if (!video) {
                 console.error('Video element not found');
-                alert('❌ Video element not found - scanner may not be properly initialized');
+                alert('âŒ Video element not found - scanner may not be properly initialized');
                 return;
             }
 
@@ -653,14 +653,14 @@ Protocol: ${location.protocol}
                 canvas.height = video.videoHeight;
 
                 if (canvas.width === 0 || canvas.height === 0) {
-                    alert('❌ Video dimensions are 0x0. Camera may not be properly initialized.');
+                    alert('âŒ Video dimensions are 0x0. Camera may not be properly initialized.');
                     return;
                 }
 
                 ctx.drawImage(video, 0, 0);
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-                console.log('📸 Successfully captured frame data:', {
+                console.log('ðŸ“¸ Successfully captured frame data:', {
                     width: imageData.width,
                     height: imageData.height,
                     dataLength: imageData.data.length
@@ -684,7 +684,7 @@ Protocol: ${location.protocol}
                 const activePercent = (nonZeroPixels / totalPixels * 100).toFixed(1);
                 const brightPercent = (brightPixels / totalPixels * 100).toFixed(1);
 
-                console.log(`📊 Frame analysis: ${nonZeroPixels} non-black pixels (${activePercent}%), ${brightPixels} bright pixels (${brightPercent}%)`);
+                console.log(`ðŸ“Š Frame analysis: ${nonZeroPixels} non-black pixels (${activePercent}%), ${brightPixels} bright pixels (${brightPercent}%)`);
 
                 // Create a temporary canvas to show captured frame (for debugging)
                 canvas.style.position = 'fixed';
@@ -704,18 +704,18 @@ Protocol: ${location.protocol}
                 }, 5000);
 
                 if (nonZeroPixels === 0) {
-                    alert('⚠️ Video feed appears to be completely black!\n\nPossible issues:\n• Camera is covered\n• No camera permission\n• Camera hardware failure\n\nCheck browser console for more details.');
+                    alert('âš ï¸ Video feed appears to be completely black!\n\nPossible issues:\nâ€¢ Camera is covered\nâ€¢ No camera permission\nâ€¢ Camera hardware failure\n\nCheck browser console for more details.');
                 } else if (activePercent < 10) {
-                    alert(`⚠️ Video feed appears very dark (${activePercent}% active pixels).\n\nTry:\n• Improve lighting\n• Move to brighter area\n• Check if camera lens is clean`);
+                    alert(`âš ï¸ Video feed appears very dark (${activePercent}% active pixels).\n\nTry:\nâ€¢ Improve lighting\nâ€¢ Move to brighter area\nâ€¢ Check if camera lens is clean`);
                 } else if (brightPercent < 5) {
-                    alert(`⚠️ Video feed is quite dark (${brightPercent}% bright pixels).\n\nFor better QR detection:\n• Increase lighting\n• Avoid shadows on QR code\n• Move closer to light source`);
+                    alert(`âš ï¸ Video feed is quite dark (${brightPercent}% bright pixels).\n\nFor better QR detection:\nâ€¢ Increase lighting\nâ€¢ Avoid shadows on QR code\nâ€¢ Move closer to light source`);
                 } else {
-                    alert(`✅ Video feed looks good!\n\n📊 Stats:\n• Active pixels: ${activePercent}%\n• Bright pixels: ${brightPercent}%\n• Resolution: ${canvas.width}x${canvas.height}\n\nIf QR codes still aren't scanning:\n\n📍 Try these tips:\n• Move camera closer to QR code\n• Ensure QR code is flat and uncrumpled\n• Try different angles\n• Check QR code isn't damaged\n• Ensure good lighting without glare\n• Hold camera steady for 2-3 seconds\n\n🖼️ A preview of your current camera feed will appear in the top-right corner for 5 seconds.`);
+                    alert(`âœ… Video feed looks good!\n\nðŸ“Š Stats:\nâ€¢ Active pixels: ${activePercent}%\nâ€¢ Bright pixels: ${brightPercent}%\nâ€¢ Resolution: ${canvas.width}x${canvas.height}\n\nIf QR codes still aren't scanning:\n\nðŸ“ Try these tips:\nâ€¢ Move camera closer to QR code\nâ€¢ Ensure QR code is flat and uncrumpled\nâ€¢ Try different angles\nâ€¢ Check QR code isn't damaged\nâ€¢ Ensure good lighting without glare\nâ€¢ Hold camera steady for 2-3 seconds\n\nðŸ–¼ï¸ A preview of your current camera feed will appear in the top-right corner for 5 seconds.`);
                 }
 
             } catch (err) {
                 console.error('Error testing video capture:', err);
-                alert('❌ Error testing video feed: ' + err.message);
+                alert('âŒ Error testing video feed: ' + err.message);
             }
         }
 
@@ -729,7 +729,7 @@ Protocol: ${location.protocol}
                 return;
             }
 
-            console.log('🔄 Manually restarting scanner...');
+            console.log('ðŸ”„ Manually restarting scanner...');
 
             html5QrcodeScanner.clear().then(() => {
                 console.log('Scanner stopped for manual restart');
@@ -912,16 +912,16 @@ Protocol: ${location.protocol}
 
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        console.log('✅ Success sound played');
+                        console.log('âœ… Success sound played');
                     }).catch(error => {
-                        console.log('🔇 Audio autoplay prevented (normal on some browsers):', error.message);
+                        console.log('ðŸ”‡ Audio autoplay prevented (normal on some browsers):', error.message);
 
                         // Try alternative: Web Audio API beep
                         playWebAudioBeep();
                     });
                 }
             } catch (error) {
-                console.log('🔇 Audio not supported:', error.message);
+                console.log('ðŸ”‡ Audio not supported:', error.message);
                 // Try Web Audio API as fallback
                 playWebAudioBeep();
             }
@@ -948,20 +948,20 @@ Protocol: ${location.protocol}
                     oscillator.start(audioContext.currentTime);
                     oscillator.stop(audioContext.currentTime + 0.2);
 
-                    console.log('✅ Web Audio beep played');
+                    console.log('âœ… Web Audio beep played');
                 }
             } catch (error) {
-                console.log('🔇 Web Audio not supported:', error.message);
+                console.log('ðŸ”‡ Web Audio not supported:', error.message);
                 // Final fallback: vibration on mobile
                 if ('vibrate' in navigator) {
                     navigator.vibrate([100, 50, 100]); // Success vibration pattern
-                    console.log('📳 Haptic feedback provided');
+                    console.log('ðŸ“³ Haptic feedback provided');
                 }
             }
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            console.log('🎉 QR CODE SCANNED SUCCESSFULLY!');
+            console.log('ðŸŽ‰ QR CODE SCANNED SUCCESSFULLY!');
             console.log('Decoded text:', decodedText);
 
             // Immediate visual feedback
@@ -1106,7 +1106,7 @@ Protocol: ${location.protocol}
 
                 // If we've had too many dimension errors, try restarting the scanner
                 if (window.dimensionErrors > 50 && window.dimensionErrors % 200 === 0) {
-                    console.warn(`⚠️ ${window.dimensionErrors} dimension errors detected. Attempting scanner restart...`);
+                    console.warn(`âš ï¸ ${window.dimensionErrors} dimension errors detected. Attempting scanner restart...`);
 
                     // Try to restart the scanner
                     if (html5QrcodeScanner) {
@@ -1174,7 +1174,7 @@ Protocol: ${location.protocol}
                 debounceTimeout = setTimeout(() => {
                     const scannedValue = input.value.trim();
                     if (scannedValue) {
-                        console.log(`🎉 PHYSICAL SCANNER DETECTED CODE: ${scannedValue}`);
+                        console.log(`ðŸŽ‰ PHYSICAL SCANNER DETECTED CODE: ${scannedValue}`);
 
                         // Visual feedback for physical scanner
                         document.getElementById('result').innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle mr-2"></i><strong>QR Code Detected!</strong><br>Processing: ' + scannedValue + '</div>';

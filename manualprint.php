@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -49,7 +49,7 @@
                         <input type="text" class="form-control" id="manualQrcodeLink" onchange="handleQrCodeLinkChange()">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="useDefaultQrCode" onchange="handleQrCodeLinkChange()">
-                            <label class="form-check-label" for="useDefaultQrCode">Use default QR code (img/logo.png) if not available</label>
+                            <label class="form-check-label" for="useDefaultQrCode">Use default QR code (img/73rdNatCon.jpg) if not available</label>
                         </div>
                     </div>
                 </form>
@@ -76,8 +76,8 @@
             const useDefaultQrCodeCheckbox = document.getElementById('useDefaultQrCode');
             
             if (useDefaultQrCodeCheckbox.checked && !qrCodeLinkInput.value.trim()) {
-                qrCodeLinkInput.value = 'img/logo.png';
-            } else if (!useDefaultQrCodeCheckbox.checked && qrCodeLinkInput.value === 'img/logo.png') {
+                qrCodeLinkInput.value = 'img/73rdNatCon.jpg';
+            } else if (!useDefaultQrCodeCheckbox.checked && qrCodeLinkInput.value === 'img/73rdNatCon.jpg') {
                 qrCodeLinkInput.value = '';
             }
         }
@@ -92,7 +92,7 @@
 
             // Use default QR code if checkbox is checked and no link is provided
             if (document.getElementById('useDefaultQrCode').checked && !qrcodeLink.trim()) {
-                qrcodeLink = 'img/logo.png';
+                qrcodeLink = 'img/73rdNatCon.jpg';
             }
 
             // Construct the name part with middle name included only if it is not "N/A"

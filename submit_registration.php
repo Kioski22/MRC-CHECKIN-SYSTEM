@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 require('dbConnection.php');  // Database connection
 require('libs/phpqrcode/qrlib.php');
@@ -184,7 +184,7 @@ if ($stmt->execute()) {
         $mail->Subject = 'Your e-Ticket for the 72nd National Convention';
 
         // Define placeholders
-        $logo_url = 'https://icto.psmeinc.org.ph/checkin/img/73rdNatCon.webp'; // Replace with dynamic QR code URL
+        $logo_url = 'https://icto.psmeinc.org.ph/checkin/img/73rdNatCon.jpg'; // Replace with dynamic QR code URL
         
         // Set timezone to Asia/Manila for Philippine time
         date_default_timezone_set('Asia/Manila');
@@ -250,3 +250,4 @@ if ($stmt->execute()) {
 // Close the statement and connection
 $stmt->close();
 $db->close();
+

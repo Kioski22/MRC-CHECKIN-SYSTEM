@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include 'dbConnection.php';
 
@@ -29,7 +29,7 @@ include 'functions.php';
     <meta name="author" content="">
 
     <title>List Users | MINDANAO REGIONAL CONFERENCE</title>
-    <link rel="icon" href="img/logo.ico" type="image/icon type">
+    <link rel="icon" href="img/73rdNatCon.jpg" type="image/jpeg">
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -154,7 +154,7 @@ include 'functions.php';
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">Ã—</span>
                     </button>
                 </div>
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>

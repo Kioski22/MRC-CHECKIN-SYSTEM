@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include 'dbConnection.php';
 
@@ -52,7 +52,7 @@ $current_config = getTestConfig();
     <meta name="author" content="">
 
     <title>Test Mode Controls | MINDANAO REGIONAL CONFERENCE</title>
-    <link rel="icon" href="img/logo.ico" type="image/icon type">
+    <link rel="icon" href="img/73rdNatCon.jpg" type="image/jpeg">
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -261,7 +261,7 @@ $current_config = getTestConfig();
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <h6>🕐 Pre-Convention Testing</h6>
+                                            <h6>ðŸ• Pre-Convention Testing</h6>
                                             <p>Set date to <code>2025-10-15</code> to test:</p>
                                             <ul>
                                                 <li>Food release should be disabled</li>
@@ -270,7 +270,7 @@ $current_config = getTestConfig();
                                             </ul>
                                         </div>
                                         <div class="col-md-4">
-                                            <h6>🍽️ Convention Day Testing</h6>
+                                            <h6>ðŸ½ï¸ Convention Day Testing</h6>
                                             <p>Set date to <code>2025-10-16/17/18</code> to test:</p>
                                             <ul>
                                                 <li>Food release is enabled</li>
@@ -280,7 +280,7 @@ $current_config = getTestConfig();
                                             </ul>
                                         </div>
                                         <div class="col-md-4">
-                                            <h6>🕕 Post-Convention Testing</h6>
+                                            <h6>ðŸ•• Post-Convention Testing</h6>
                                             <p>Set date to <code>2025-10-19</code> to test:</p>
                                             <ul>
                                                 <li>Food release should be disabled</li>
@@ -328,7 +328,7 @@ $current_config = getTestConfig();
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">Ã—</span>
                     </button>
                 </div>
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>

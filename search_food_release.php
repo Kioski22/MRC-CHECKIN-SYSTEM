@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include 'dbConnection.php';
 
@@ -32,7 +32,7 @@ include 'test_config.php';
     <meta name="author" content="">
 
     <title>Food Release Search | MINDANAO REGIONAL CONFERENCE</title>
-    <link rel="icon" href="img/logo.ico" type="image/icon type">
+    <link rel="icon" href="img/73rdNatCon.jpg" type="image/jpeg">
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -280,7 +280,7 @@ include 'test_config.php';
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">Ã—</span>
                     </button>
                 </div>
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
@@ -376,9 +376,9 @@ include 'test_config.php';
                     let statusBadges = '';
                     if (result.release_status) {
                         const status = result.release_status;
-                        statusBadges += status.day1_released ? '<span class="badge badge-success release-status-badge">Day 1 ✓</span>' : '<span class="badge badge-light release-status-badge">Day 1</span>';
-                        statusBadges += status.day2_released ? '<span class="badge badge-success release-status-badge">Day 2 ✓</span>' : '<span class="badge badge-light release-status-badge">Day 2</span>';
-                        statusBadges += status.day3_released ? '<span class="badge badge-success release-status-badge">Day 3 ✓</span>' : '<span class="badge badge-light release-status-badge">Day 3</span>';
+                        statusBadges += status.day1_released ? '<span class="badge badge-success release-status-badge">Day 1 âœ“</span>' : '<span class="badge badge-light release-status-badge">Day 1</span>';
+                        statusBadges += status.day2_released ? '<span class="badge badge-success release-status-badge">Day 2 âœ“</span>' : '<span class="badge badge-light release-status-badge">Day 2</span>';
+                        statusBadges += status.day3_released ? '<span class="badge badge-success release-status-badge">Day 3 âœ“</span>' : '<span class="badge badge-light release-status-badge">Day 3</span>';
                     } else {
                         statusBadges = '<span class="badge badge-secondary">Not Registered for Food</span>';
                     }

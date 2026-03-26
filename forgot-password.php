@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 if (!isset($_SESSION['error'])) {
     $_SESSION['error'] = '';
@@ -49,7 +49,7 @@ if (isset($_SESSION['user_id']) || (isset($_SESSION['username']))) {
                             <div class="col-lg-12">
                                 <div class="p-5">
                                     <div class="text-center">
-                                        <img src="img/logo.png" alt="Logo" class="img-fluid pb-5" width="40%">
+                                        <img src="img/73rdNatCon.jpg" alt="Logo" class="img-fluid pb-5" width="40%">
                                     </div>
                                     <!-- Display error message -->
                                     <?php if (!empty($_SESSION['error'])): ?>
@@ -99,3 +99,4 @@ if (isset($_SESSION['user_id']) || (isset($_SESSION['username']))) {
 </body>
 
 </html>
+

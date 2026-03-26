@@ -1,11 +1,11 @@
-<!-- Sidebar -->
+﻿<!-- Sidebar -->
 <ul class="navbar-nav bg-gradient-teal sidebar sidebar-dark accordion" id="accordionSidebar">
 
     <!-- Sidebar - Brand -->
     <a class="sidebar-brand d-flex align-items-center" href="index">
         <div class="sidebar-brand-icon" style="width: 75px;">
             <!--<i class="fas fa-laugh-wink"></i>-->
-            <img src="img/73rdNatCon.webp" alt="Logo" class="img-fluid mr-0" width="55%">
+            <img src="img/73rdNatCon.jpg" alt="Logo" class="img-fluid mr-0" width="55%">
         </div>
 
         <div class="sidebar-brand-text mx-0">PSME ICTO</div>

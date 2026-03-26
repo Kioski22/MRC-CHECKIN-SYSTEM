@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include 'dbConnection.php';
 
@@ -33,7 +33,7 @@ date_default_timezone_set('Asia/Manila');
     <meta name="author" content="">
 
     <title>Release Food by QR Scan | MINDANAO REGIONAL CONFERENCE</title>
-    <link rel="icon" href="img/logo.ico" type="image/icon type">
+    <link rel="icon" href="img/73rdNatCon.jpg" type="image/jpeg">
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -345,7 +345,7 @@ date_default_timezone_set('Asia/Manila');
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">Ã—</span>
                     </button>
                 </div>
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
@@ -577,14 +577,14 @@ date_default_timezone_set('Asia/Manila');
 
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        console.log('🔊 Success sound played');
+                        console.log('ðŸ”Š Success sound played');
                     }).catch(error => {
-                        console.log('🔇 Audio autoplay prevented:', error.message);
+                        console.log('ðŸ”‡ Audio autoplay prevented:', error.message);
                         playWebAudioBeep();
                     });
                 }
             } catch (error) {
-                console.log('🔇 Audio not supported:', error.message);
+                console.log('ðŸ”‡ Audio not supported:', error.message);
                 playWebAudioBeep();
             }
         }
@@ -609,7 +609,7 @@ date_default_timezone_set('Asia/Manila');
                     oscillator.stop(audioContext.currentTime + 0.1);
                 }
             } catch (error) {
-                console.log('🔇 Web Audio not supported:', error.message);
+                console.log('ðŸ”‡ Web Audio not supported:', error.message);
                 if ('vibrate' in navigator) {
                     navigator.vibrate(200);
                 }
@@ -617,7 +617,7 @@ date_default_timezone_set('Asia/Manila');
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            console.log('🎉 QR CODE SCANNED SUCCESSFULLY!');
+            console.log('ðŸŽ‰ QR CODE SCANNED SUCCESSFULLY!');
             console.log('Decoded text:', decodedText);
 
             // Immediate visual feedback

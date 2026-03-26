@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 include 'dbConnection.php';
 
@@ -31,7 +31,7 @@ include 'functions.php';
     <meta name="author" content="">
 
     <title>List Food Registration | MINDANAO REGIONAL CONFERENCE</title>
-    <link rel="icon" href="img/logo.ico" type="image/icon type">
+    <link rel="icon" href="img/73rdNatCon.jpg" type="image/jpeg">
 
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -57,7 +57,7 @@ include 'functions.php';
             position: relative;
             /* Set position to relative to contain the absolute loader */
             min-height: 110px;
-            /* Adjust based on your needs to ensure there’s enough space */
+            /* Adjust based on your needs to ensure thereâ€™s enough space */
         }
 
         .loader {
@@ -468,7 +468,7 @@ include 'functions.php';
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
                     <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                        <span aria-hidden="true">Ã—</span>
                     </button>
                 </div>
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
@@ -641,9 +641,9 @@ include 'functions.php';
                             let statusHtml = '<div class="text-sm">';
                             
                             // Show day statuses
-                            const day1Status = row.day1_released ? '<span class="badge badge-success badge-sm">D1 ✓</span>' : '<span class="badge badge-light badge-sm">D1</span>';
-                            const day2Status = row.day2_released ? '<span class="badge badge-success badge-sm">D2 ✓</span>' : '<span class="badge badge-light badge-sm">D2</span>';
-                            const day3Status = row.day3_released ? '<span class="badge badge-success badge-sm">D3 ✓</span>' : '<span class="badge badge-light badge-sm">D3</span>';
+                            const day1Status = row.day1_released ? '<span class="badge badge-success badge-sm">D1 âœ“</span>' : '<span class="badge badge-light badge-sm">D1</span>';
+                            const day2Status = row.day2_released ? '<span class="badge badge-success badge-sm">D2 âœ“</span>' : '<span class="badge badge-light badge-sm">D2</span>';
+                            const day3Status = row.day3_released ? '<span class="badge badge-success badge-sm">D3 âœ“</span>' : '<span class="badge badge-light badge-sm">D3</span>';
                             
                             statusHtml += day1Status + ' ' + day2Status + ' ' + day3Status;
                             statusHtml += '</div>';
