@@ -28,7 +28,7 @@ include 'functions.php';
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Check In | 73rd National Convention</title>
+    <title>Check In | MINDANAO REGIONAL CONFERENCE</title>
     <link rel="icon" href="img/logo.ico" type="image/icon type">
 
     <!-- Custom fonts for this template-->

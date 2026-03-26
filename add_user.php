@@ -54,7 +54,7 @@ include 'functions.php';
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Add User | 73rd National Convention</title>
+    <title>Add User | MINDANAO REGIONAL CONFERENCE</title>
     <link rel="icon" href="img/logo.ico" type="image/icon type">
 
     <!-- Custom fonts for this template-->

@@ -76,3 +76,4 @@ jobs:
             **/.vscode/**
             **/vendor/**
             **/libs/**
+            **/uploads/**

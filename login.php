@@ -21,7 +21,7 @@ if (isset($_SESSION['user_id']) || (isset($_SESSION['username']))) {
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Login | 73rd National Convention</title>
+    <title>Login | MINDANAO REGIONAL CONFERENCE</title>
     <link rel="icon" href="img/logo.ico" type="image/icon type">
     <!-- Custom fonts for this template-->
     <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">

@@ -32,7 +32,7 @@ date_default_timezone_set('Asia/Manila');
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Release Food by QR Scan | 73rd National Convention</title>
+    <title>Release Food by QR Scan | MINDANAO REGIONAL CONFERENCE</title>
     <link rel="icon" href="img/logo.ico" type="image/icon type">
 
     <!-- Custom fonts for this template-->

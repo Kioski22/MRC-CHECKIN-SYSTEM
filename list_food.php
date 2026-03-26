@@ -30,7 +30,7 @@ include 'functions.php';
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>List Food Registration | 73rd National Convention</title>
+    <title>List Food Registration | MINDANAO REGIONAL CONFERENCE</title>
     <link rel="icon" href="img/logo.ico" type="image/icon type">
 
     <!-- Custom fonts for this template-->
