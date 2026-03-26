@@ -40,7 +40,7 @@ include 'functions.php';
     <!-- Custom styles for this template-->
     <link href="css/sb-admin-2.min.css" rel="stylesheet">
     <link href="css/custom.css" rel="stylesheet">
-    <script src="js\html5-qrcode.min.js"></script>
+    <script src="js/html5-qrcode.min.js"></script>
     <style>
         #loading,
         #waitingMessage {
@@ -1049,7 +1049,7 @@ Protocol: ${location.protocol}
 
         async function fetchQRCodeDetails(qrCode) {
             try {
-                const response = await fetch('ictoqr', {
+                const response = await fetch('ictoqr.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
@@ -1073,7 +1073,7 @@ Protocol: ${location.protocol}
         }
 
         function insertCheckinData(data) {
-            fetch('insertCheckinData', {
+            fetch('insertCheckinData.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1421,7 +1421,7 @@ Protocol: ${location.protocol}
 
         async function renewAccessToken() {
             try {
-                const response = await fetch('renewToken');
+                const response = await fetch('renewToken.php');
                 if (!response.ok) {
                     throw new Error(`Failed to renew token. Status code: ${response.status}`);
                 }
@@ -1610,7 +1610,7 @@ Protocol: ${location.protocol}
             // QR code is still being displayed but not included in the POST request
             const qrcode = document.getElementById('modalQrcodeLink').href;
 
-            fetch('checkinscript', {
+            fetch('checkinscript.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1661,7 +1661,7 @@ Protocol: ${location.protocol}
             }
 
             try {
-                const response = await fetch('releasekit', {
+                const response = await fetch('releasekit.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1728,7 +1728,7 @@ Protocol: ${location.protocol}
             }
 
             try {
-                const response = await fetch('releasemsp', {
+                const response = await fetch('releasemsp.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
