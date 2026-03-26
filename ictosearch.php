@@ -11,23 +11,36 @@ $response = [
     "errorMsg" => ""
 ];
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    $response['errorCode'] = 1;
+    $response['errorMsg'] = 'Invalid request method.';
+    echo json_encode($response);
+    exit();
+}
+
 // Check if 'search_term' is provided in the POST request
 if (isset($_POST['search_term'])) {
     $searchTerm = trim($_POST['search_term']);
 
-    $internalResults = searchLocalRegistrations($db, $searchTerm);
-    $externalResults = searchExternalRegistrations($searchTerm);
-    $mergedResults = mergeRegistrationResults($internalResults, $externalResults);
-
-    if (!empty($mergedResults)) {
-        $response['resultKey'] = 1;
-        $response['resultValue'] = $mergedResults;
-        if (!empty($externalResults) && empty($internalResults)) {
-            $response['errorMsg'] = 'Results loaded from external registration data.';
-        }
-    } else {
+    if ($searchTerm === '') {
         $response['errorCode'] = 1;
-        $response['errorMsg'] = 'No record found for the provided search term.';
+        $response['errorMsg'] = "Missing 'search_term' parameter.";
+    } else {
+        $internalResults = searchLocalRegistrations($db, $searchTerm);
+        $externalResults = searchExternalRegistrations($searchTerm);
+        $mergedResults = mergeRegistrationResults($internalResults, $externalResults);
+
+        if (!empty($mergedResults)) {
+            $response['resultKey'] = 1;
+            $response['resultValue'] = $mergedResults;
+            if (!empty($externalResults) && empty($internalResults)) {
+                $response['errorMsg'] = 'Results loaded from external registration data.';
+            }
+        } else {
+            $response['errorCode'] = 1;
+            $response['errorMsg'] = 'No record found for the provided search term.';
+        }
     }
 } else {
     // Missing 'search_term' parameter

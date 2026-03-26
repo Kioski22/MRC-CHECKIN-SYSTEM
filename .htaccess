@@ -36,6 +36,11 @@ RewriteRule ^ - [L]
 RewriteCond %{REQUEST_URI} ^/?(setup_|admin_|debug_|test_) [NC]
 RewriteRule ^ - [L]
 
+# Keep backend API endpoints on their .php URLs so hosted POST requests do not
+# bounce through an external redirect before PHP reads the body.
+RewriteCond %{REQUEST_URI} /(insertCheckinData|ictosearch|releasemsp|checkinscript|releasekit|ictoqr|renewToken)\.php$ [NC]
+RewriteRule ^ - [L]
+
 # Redirect .php extension to clean URLs (do this first)
 RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
 RewriteRule ^ /%1? [R=301,L]

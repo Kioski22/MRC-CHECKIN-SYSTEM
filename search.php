@@ -3,12 +3,12 @@ session_start();
 include 'dbConnection.php';
 
 if (!isset($_SESSION['access_token'])) {
-    header("Location: login2.php");
+    header("Location: login.php");
     exit();
 }
 
 if (!isset($_SESSION['user_id']) || (!isset($_SESSION['username']))) {
-    header("Location: login2.php");
+    header("Location: login.php");
     exit();
 } else {
     $user_id = $_SESSION['user_id'];
@@ -321,7 +321,7 @@ include 'functions.php';
         });
 
         function insertCheckinData(data) {
-            fetch('insertCheckinData.php', {
+            fetch('insertCheckinData', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -361,7 +361,7 @@ include 'functions.php';
                 clearSearchResults();
                 setSearchStatus('Searching registration records...', 'info');
 
-                const response = await fetch('ictosearch.php', {
+                const response = await fetch('ictosearch', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
@@ -396,7 +396,7 @@ include 'functions.php';
             }
 
             try {
-                const response = await fetch('releasemsp.php', {
+                const response = await fetch('releasemsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -654,7 +654,7 @@ include 'functions.php';
             // QR code is still being displayed but not included in the POST request
             const qrcode = document.getElementById('modalQrcodeLink').href;
 
-            fetch('checkinscript.php', {
+            fetch('checkinscript', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -705,7 +705,7 @@ include 'functions.php';
             }
 
             try {
-                const response = await fetch('releasekit.php', {
+                const response = await fetch('releasekit', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

@@ -3,7 +3,7 @@ session_start();
 include 'dbConnection.php';
 
 if (!isset($_SESSION['access_token'])) {
-    header("Location: login2.php");
+    header("Location: login.php");
     exit();
 }
 ?>
