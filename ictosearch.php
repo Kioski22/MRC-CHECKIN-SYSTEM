@@ -1,4 +1,7 @@
 <?php
+ob_start();
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
 session_start();
 header('Content-Type: application/json');
 require('dbConnection.php');  // Include your database connection file
@@ -180,6 +183,7 @@ function mergeRegistrationResults($internalResults, $externalResults) {
 
 // Close the database connection
 $db->close();
-
+ob_clean(); // CLEAN ANY ACCIDENTAL OUTPUT
 // Output the response in JSON format
 echo json_encode($response);
+exit();
