@@ -33,7 +33,8 @@ if (isset($_POST['search_term'])) {
         $response['errorMsg'] = "Missing 'search_term' parameter.";
     } else {
         $internalResults = searchLocalRegistrations($db, $searchTerm);
-        $externalResults = searchExternalRegistrations($searchTerm, getActiveEventId($db));
+        $externalSearch = searchExternalRegistrations($searchTerm, getActiveEventId($db));
+        $externalResults = $externalSearch['items'];
         $mergedResults = mergeRegistrationResults($internalResults, $externalResults);
 
         if (!empty($mergedResults)) {
@@ -42,9 +43,30 @@ if (isset($_POST['search_term'])) {
             if (!empty($externalResults) && empty($internalResults)) {
                 $response['errorMsg'] = 'Results loaded from external registration data.';
             }
+
+            if (isset($externalSearch['api_health'])) {
+                $response['api_health'] = $externalSearch['api_health'];
+                $response['failure_type'] = $externalSearch['api_health']['failure_type'];
+                $response['status_source'] = $externalSearch['api_health']['status_source'];
+            }
         } else {
-            $response['errorCode'] = 1;
-            $response['errorMsg'] = 'No record found for the provided search term.';
+            if (!empty($internalResults)) {
+                $response['resultKey'] = 1;
+                $response['resultValue'] = $internalResults;
+            } else {
+                $response['errorCode'] = 1;
+                if (isset($externalSearch['api_health']) && !in_array($externalSearch['api_health']['failure_type'], ['ok', 'no_data'], true)) {
+                    $response['errorMsg'] = $externalSearch['api_health']['message'];
+                    $response['failure_type'] = $externalSearch['api_health']['failure_type'];
+                    $response['status_source'] = $externalSearch['api_health']['status_source'];
+                } else {
+                    $response['errorMsg'] = 'No record found for the provided search term.';
+                }
+            }
+
+            if (isset($externalSearch['api_health'])) {
+                $response['api_health'] = $externalSearch['api_health'];
+            }
         }
     }
 } else {
@@ -86,11 +108,17 @@ function searchLocalRegistrations($db, $searchTerm) {
 }
 
 function searchExternalRegistrations($searchTerm, $eventId) {
+    $startedAt = microtime(true);
     $tokenError = null;
     $accessToken = smartpayEnsureSessionToken($tokenError);
     if ($accessToken === null) {
         error_log('ictosearch could not get access token: ' . $tokenError);
-        return [];
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+        $meta = apiHealthBuildMeta('smartpay', 'postSearch', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?: 'External Smartpay API authentication failed. This hosted app is still online.');
+        return [
+            'items' => [],
+            'api_health' => $meta,
+        ];
     }
 
     $externalResults = executeExternalSearchRequest($searchTerm, $eventId, $accessToken, $httpCode, $curlError);
@@ -99,18 +127,46 @@ function searchExternalRegistrations($searchTerm, $eventId) {
         $accessToken = smartpayEnsureSessionToken($tokenError, true);
         if ($accessToken === null) {
             error_log('ictosearch token refresh failed: ' . $tokenError);
-            return [];
+            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+            $meta = apiHealthBuildMeta('smartpay', 'postSearch', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?: 'External Smartpay API authentication failed. This hosted app is still online.');
+            return [
+                'items' => [],
+                'api_health' => $meta,
+            ];
         }
 
         $externalResults = executeExternalSearchRequest($searchTerm, $eventId, $accessToken, $httpCode, $curlError);
     }
 
+    $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+
     if ($externalResults === null) {
         error_log('ictosearch external search failed. HTTP code: ' . $httpCode . ' Error: ' . $curlError);
-        return [];
+        $failureType = apiHealthInferFailureType($httpCode, $curlError, null);
+        $meta = apiHealthBuildMeta('smartpay', 'postSearch', $failureType, 'upstream', $httpCode, $durationMs, apiHealthDefaultUserMessage($failureType));
+        smartpayRecordHealth('postSearch', $failureType, 'Search request failed.', $httpCode, $durationMs, 'upstream', ['event_id' => $eventId]);
+        return [
+            'items' => [],
+            'api_health' => $meta,
+        ];
     }
 
-    return $externalResults;
+    if (empty($externalResults)) {
+        $meta = apiHealthBuildMeta('smartpay', 'postSearch', 'no_data', 'upstream', $httpCode, $durationMs, 'Smartpay API responded normally, but found no matching registration records.');
+        smartpayRecordHealth('postSearch', 'no_data', 'Search completed with no matching records.', $httpCode, $durationMs, 'upstream', ['event_id' => $eventId]);
+        return [
+            'items' => [],
+            'api_health' => $meta,
+        ];
+    }
+
+    $meta = apiHealthBuildMeta('smartpay', 'postSearch', 'ok', 'upstream', $httpCode, $durationMs, 'Smartpay API returned registration search results successfully.');
+    smartpayRecordHealth('postSearch', 'ok', 'Search request succeeded.', $httpCode, $durationMs, 'upstream', ['event_id' => $eventId, 'result_count' => count($externalResults)]);
+
+    return [
+        'items' => $externalResults,
+        'api_health' => $meta,
+    ];
 }
 
 function executeExternalSearchRequest($searchTerm, $eventId, $accessToken, &$httpCode, &$curlError) {

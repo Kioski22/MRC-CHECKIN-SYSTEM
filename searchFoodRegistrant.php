@@ -117,10 +117,13 @@ function searchInternalFoodDatabase($searchTerm, $db) {
 function searchExternalPSMEAPI($searchTerm) {
     try {
         global $db;
+        $startedAt = microtime(true);
 
         $tokenError = null;
         $accessToken = smartpayEnsureSessionToken($tokenError);
         if ($accessToken === null) {
+            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+            smartpayRecordHealth('foodPostSearch', 'auth_failure', $tokenError ?: 'Food registrant search could not authenticate with Smartpay.', 401, $durationMs, 'upstream');
             throw new Exception($tokenError ?: 'No access token available');
         }
 
@@ -142,12 +145,22 @@ function searchExternalPSMEAPI($searchTerm) {
         $response = file_get_contents($apiUrl, false, $context);
         
         if ($response === false) {
+            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+            smartpayRecordHealth('foodPostSearch', 'network_failure', 'Food registrant search could not reach Smartpay.', null, $durationMs, 'upstream', ['event_id' => $eventId]);
             throw new Exception('API request failed');
         }
         
         $data = json_decode($response, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+            smartpayRecordHealth('foodPostSearch', 'invalid_response', 'Food registrant search received invalid JSON from Smartpay.', 200, $durationMs, 'upstream', ['event_id' => $eventId]);
+            return [];
+        }
         
         if (!$data || $data['resultKey'] !== 1) {
+            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+            smartpayRecordHealth('foodPostSearch', 'no_data', 'Food registrant search returned no matching records.', 200, $durationMs, 'upstream', ['event_id' => $eventId]);
             return []; // No results or error
         }
         
@@ -186,6 +199,9 @@ function searchExternalPSMEAPI($searchTerm) {
             
             $results[] = $result;
         }
+
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+        smartpayRecordHealth('foodPostSearch', 'ok', 'Food registrant search succeeded.', 200, $durationMs, 'upstream', ['event_id' => $eventId, 'result_count' => count($results)]);
         
         return $results;
         

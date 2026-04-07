@@ -25,6 +25,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $email = trim((string) ($_POST['email'] ?? ''));
 $eventId = getActiveEventId($db);
+$startedAt = microtime(true);
 
 if (isset($_POST['event_id']) && intval($_POST['event_id']) > 0) {
     $eventId = intval($_POST['event_id']);
@@ -81,10 +82,16 @@ function fetchRegistrationList($eventId, $accessToken, &$httpCode, &$curlError)
 $tokenError = null;
 $accessToken = smartpayEnsureSessionToken($tokenError);
 if ($accessToken === null) {
+    $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+    $meta = apiHealthBuildMeta('smartpay', 'getRegisterMember', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?? 'External Smartpay API authentication failed. This hosted app is still online.');
     http_response_code(502);
     echo json_encode([
         'success' => false,
-        'message' => $tokenError ?? 'Unable to retrieve access token'
+        'message' => $meta['message'],
+        'technical_error' => $tokenError ?? 'Unable to retrieve access token',
+        'api_health' => $meta,
+        'status_source' => 'upstream',
+        'failure_type' => 'auth_failure'
     ]);
     exit();
 }
@@ -93,10 +100,16 @@ $response = fetchRegistrationList($eventId, $accessToken, $httpCode, $curlError)
 if ($httpCode === 401) {
     $accessToken = smartpayEnsureSessionToken($tokenError, true);
     if ($accessToken === null) {
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+        $meta = apiHealthBuildMeta('smartpay', 'getRegisterMember', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?? 'External Smartpay API authentication failed. This hosted app is still online.');
         http_response_code(401);
         echo json_encode([
             'success' => false,
-            'message' => $tokenError ?? 'Unauthorized'
+            'message' => $meta['message'],
+            'technical_error' => $tokenError ?? 'Unauthorized',
+            'api_health' => $meta,
+            'status_source' => 'upstream',
+            'failure_type' => 'auth_failure'
         ]);
         exit();
     }
@@ -105,31 +118,53 @@ if ($httpCode === 401) {
 }
 
 if ($response === null) {
+    $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+    $failureType = apiHealthInferFailureType(isset($httpCode) ? intval($httpCode) : null, isset($curlError) ? $curlError : '', null);
+    $meta = apiHealthBuildMeta('smartpay', 'getRegisterMember', $failureType, 'upstream', isset($httpCode) ? intval($httpCode) : null, $durationMs, apiHealthDefaultUserMessage($failureType));
+    smartpayRecordHealth('getRegisterMember', $failureType, 'Registration order lookup failed.', isset($httpCode) ? intval($httpCode) : null, $durationMs, 'upstream', ['event_id' => $eventId]);
     http_response_code(502);
     echo json_encode([
         'success' => false,
-        'message' => 'Failed to fetch registration list: ' . ($curlError ?: 'Unknown network error')
+        'message' => $meta['message'],
+        'technical_error' => 'Failed to fetch registration list: ' . ($curlError ?: 'Unknown network error'),
+        'api_health' => $meta,
+        'status_source' => 'upstream',
+        'failure_type' => $failureType
     ]);
     exit();
 }
 
 if ($httpCode !== 200) {
+    $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+    $failureType = apiHealthInferFailureType($httpCode, '', $response);
+    $meta = apiHealthBuildMeta('smartpay', 'getRegisterMember', $failureType, 'upstream', $httpCode, $durationMs, apiHealthDefaultUserMessage($failureType));
+    smartpayRecordHealth('getRegisterMember', $failureType, 'Registration lookup failed with HTTP code ' . $httpCode, $httpCode, $durationMs, 'upstream', ['event_id' => $eventId]);
     http_response_code($httpCode > 0 ? $httpCode : 502);
     echo json_encode([
         'success' => false,
-        'message' => 'Registration lookup failed with HTTP code ' . $httpCode
+        'message' => $meta['message'],
+        'technical_error' => 'Registration lookup failed with HTTP code ' . $httpCode,
+        'api_health' => $meta,
+        'status_source' => 'upstream',
+        'failure_type' => $failureType
     ]);
     exit();
 }
 
 $data = json_decode($response, true);
 if (!is_array($data) || !isset($data['resultKey']) || intval($data['resultKey']) !== 1 || !isset($data['resultValue']) || !is_array($data['resultValue'])) {
+    $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+    $meta = apiHealthBuildMeta('smartpay', 'getRegisterMember', 'invalid_response', 'upstream', $httpCode, $durationMs, apiHealthDefaultUserMessage('invalid_response'));
+    smartpayRecordHealth('getRegisterMember', 'invalid_response', 'Registration lookup returned invalid response structure.', $httpCode, $durationMs, 'upstream', ['event_id' => $eventId]);
     echo json_encode([
-        'success' => true,
+        'success' => false,
         'order' => null,
         'total' => 0,
         'display' => null,
-        'message' => 'Registration data unavailable'
+        'message' => $meta['message'],
+        'api_health' => $meta,
+        'status_source' => 'upstream',
+        'failure_type' => 'invalid_response'
     ]);
     exit();
 }
@@ -152,10 +187,36 @@ if ($order !== null) {
     $display = $order . ' Registrant';
 }
 
+$durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+$failureType = $order === null ? 'no_data' : 'ok';
+$meta = apiHealthBuildMeta(
+    'smartpay',
+    'getRegisterMember',
+    $failureType,
+    'upstream',
+    $httpCode,
+    $durationMs,
+    $order === null
+        ? 'Smartpay API responded normally, but the email was not found in the registration list.'
+        : 'Smartpay API returned registration order data successfully.'
+);
+smartpayRecordHealth(
+    'getRegisterMember',
+    $failureType,
+    $order === null ? 'Registration order lookup returned no matching email.' : 'Registration order lookup succeeded.',
+    $httpCode,
+    $durationMs,
+    'upstream',
+    ['event_id' => $eventId]
+);
+
 echo json_encode([
     'success' => true,
     'order' => $order,
     'total' => $total,
-    'display' => $display
+    'display' => $display,
+    'api_health' => $meta,
+    'status_source' => 'upstream',
+    'failure_type' => $failureType
 ]);
 ?>

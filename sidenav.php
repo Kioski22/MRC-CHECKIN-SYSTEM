@@ -160,6 +160,13 @@
                 <span>Event Settings</span>
             </a>
         </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="api_monitoring">
+                <i class="fas fa-fw fa-heartbeat"></i>
+                <span>API Monitoring</span>
+            </a>
+        </li>
     <?php } ?>
 
 

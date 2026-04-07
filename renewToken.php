@@ -18,15 +18,20 @@ $errorMessage = null;
 $accessToken = smartpayEnsureSessionToken($errorMessage, true);
 
 if ($accessToken === null) {
+    $meta = apiHealthBuildMeta('smartpay', 'adminlogin', 'auth_failure', 'upstream', 401, null, $errorMessage ?? 'Failed to retrieve access token');
     echo json_encode([
         'success' => false,
-        'message' => $errorMessage ?? 'Failed to retrieve access token'
+        'message' => $errorMessage ?? 'Failed to retrieve access token',
+        'api_health' => $meta
     ]);
     exit();
 }
 
+$meta = apiHealthBuildMeta('smartpay', 'adminlogin', 'ok', 'upstream', 200, null, 'Smartpay admin token refreshed successfully.');
+
 echo json_encode([
     'success' => true,
-    'access_token' => $accessToken
+    'access_token' => $accessToken,
+    'api_health' => $meta
 ]);
 ?>

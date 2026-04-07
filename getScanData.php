@@ -27,6 +27,7 @@ if (!isset($_POST['qrcode'])) {
 
 $qrcode = $_POST['qrcode'];
 $activeEventId = getActiveEventId($db);
+$startedAt = microtime(true);
 
 function executeScanLookup($qrcode, $accessToken, $eventId, &$httpCode, &$curlError)
 {
@@ -67,7 +68,16 @@ try {
     $tokenError = null;
     $access_token = smartpayEnsureSessionToken($tokenError);
     if ($access_token === null) {
-        throw new Exception($tokenError ?? 'Unable to retrieve access token');
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+        $meta = apiHealthBuildMeta('smartpay', 'getScanData', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?? 'Unable to retrieve access token');
+        echo json_encode([
+            'resultKey' => 0,
+            'resultValue' => [],
+            'errorCode' => 1,
+            'errorMsg' => $meta['message'],
+            'api_health' => $meta,
+        ]);
+        exit();
     }
 
     $response = executeScanLookup($qrcode, $access_token, $activeEventId, $http_code, $curl_error);
@@ -96,6 +106,8 @@ try {
     if (json_last_error() !== JSON_ERROR_NONE) {
         throw new Exception('Invalid JSON response from API');
     }
+
+    $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
     
     // Check if the API response indicates success
     if (!isset($api_response['resultKey']) || $api_response['resultKey'] !== 1) {
@@ -103,27 +115,59 @@ try {
         $error_message = isset($api_response['errorMsg']) && !empty($api_response['errorMsg']) 
                         ? $api_response['errorMsg'] 
                         : 'QR code not found in external system';
+
+        $meta = apiHealthBuildMeta('smartpay', 'getScanData', 'no_data', 'upstream', $http_code, $durationMs, 'Smartpay API responded normally, but no registration matched that QR code.');
+        smartpayRecordHealth('getScanData', 'no_data', $error_message, $http_code, $durationMs, 'upstream', ['event_id' => $activeEventId]);
         
         echo json_encode([
             'resultKey' => 0,
             'resultValue' => [],
             'errorCode' => isset($api_response['errorCode']) ? $api_response['errorCode'] : 1,
-            'errorMsg' => $error_message
+            'errorMsg' => $error_message,
+            'api_health' => $meta,
+            'status_source' => 'upstream',
+            'failure_type' => 'no_data'
         ]);
         exit();
     }
+
+    $meta = apiHealthBuildMeta('smartpay', 'getScanData', 'ok', 'upstream', $http_code, $durationMs, 'Smartpay API returned scan data successfully.');
+    smartpayRecordHealth('getScanData', 'ok', 'Smartpay scan lookup succeeded.', $http_code, $durationMs, 'upstream', ['event_id' => $activeEventId]);
+    $api_response['api_health'] = $meta;
+    $api_response['status_source'] = 'upstream';
+    $api_response['failure_type'] = 'ok';
     
     // Success - return the API response as-is
     echo json_encode($api_response);
     
 } catch (Exception $e) {
     error_log("getScanData error: " . $e->getMessage());
+    $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+    $failureType = apiHealthInferFailureType(isset($http_code) ? intval($http_code) : null, isset($curl_error) ? $curl_error : '', null);
+    if ($failureType === 'unknown' && strpos(strtolower($e->getMessage()), 'invalid json') !== false) {
+        $failureType = 'invalid_response';
+    }
+
+    $meta = apiHealthBuildMeta(
+        'smartpay',
+        'getScanData',
+        $failureType,
+        'upstream',
+        isset($http_code) ? intval($http_code) : null,
+        $durationMs,
+        apiHealthDefaultUserMessage($failureType)
+    );
+    smartpayRecordHealth('getScanData', $failureType, $e->getMessage(), isset($http_code) ? intval($http_code) : null, $durationMs, 'upstream', ['event_id' => $activeEventId]);
     
     echo json_encode([
         'resultKey' => 0,
         'resultValue' => [],
         'errorCode' => 1,
-        'errorMsg' => 'An error occurred while processing the QR code: ' . $e->getMessage()
+        'errorMsg' => $meta['message'],
+        'technical_error' => $e->getMessage(),
+        'api_health' => $meta,
+        'status_source' => 'upstream',
+        'failure_type' => $failureType
     ]);
 }
 ?>

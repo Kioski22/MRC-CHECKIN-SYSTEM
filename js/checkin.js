@@ -1,4 +1,31 @@
 ﻿        // Add dropdown event listener with proper error handling
+        function hasApiFailure(apiHealth) {
+            return !!(apiHealth && !['ok', 'no_data'].includes(apiHealth.failure_type));
+        }
+
+        function setSmartpayStatus(message, type = 'info') {
+            const statusEl = document.getElementById('smartpayStatus');
+            if (!statusEl) {
+                return;
+            }
+
+            const alertClass = {
+                info: 'alert-info',
+                success: 'alert-success',
+                warning: 'alert-warning',
+                danger: 'alert-danger'
+            }[type] || 'alert-info';
+
+            statusEl.innerHTML = `<div class="alert ${alertClass} mb-0" role="alert">${message}</div>`;
+        }
+
+        function clearSmartpayStatus() {
+            const statusEl = document.getElementById('smartpayStatus');
+            if (statusEl) {
+                statusEl.innerHTML = '';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const dropdown = document.getElementById('scanMethod');
             if (dropdown) {
@@ -847,6 +874,7 @@ Protocol: ${location.protocol}
 
         async function makeApiRequest(scannedValue, retryCount = 3, retryDelay = 1000) {
             document.getElementById('result').innerText = ``;
+            clearSmartpayStatus();
             // Show loading indicator before the request starts
             showLoadingIndicator();
 
@@ -875,15 +903,21 @@ Protocol: ${location.protocol}
                     hideLoadingIndicator();
 
                     if (data.resultKey === 1) {
+                        clearSmartpayStatus();
                         // Process data through handleScanData
                         handleScanData(data);
                     } else {
-                        //console.warn(`Unexpected resultKey received: ${data.resultKey}`);
-                        //document.getElementById('result').innerText += `\nWarning: Unexpected result key: ${data.resultKey}`;
-                        document.getElementById('result').innerHTML += `<span style="color: red;"><i class="fas fa-exclamation-triangle mr-2"></i>No registration found with scanned QR code.</span>`;
+                        if (hasApiFailure(data.api_health)) {
+                            setSmartpayStatus(data.api_health.message, 'danger');
+                            document.getElementById('result').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>${data.api_health.message}</div>`;
+                        } else {
+                            clearSmartpayStatus();
+                            document.getElementById('result').innerHTML += `<span style="color: red;"><i class="fas fa-exclamation-triangle mr-2"></i>No registration found with scanned QR code.</span>`;
+                        }
                     }
                 } else {
                     hideLoadingIndicator();
+                    setSmartpayStatus('The hosted check-in server returned an unexpected response before Smartpay completed. Check the local app/server logs.', 'warning');
                     console.error(`Unexpected response status: ${response.status}`);
                     document.getElementById('result').innerText += `\nError: Unexpected response status: ${response.status}`;
                 }
@@ -897,6 +931,7 @@ Protocol: ${location.protocol}
                 } else {
                     // After max retries, show the error
                     hideLoadingIndicator();
+                    setSmartpayStatus('The hosted check-in server could not complete the scan request. This does not confirm a Smartpay outage yet.', 'warning');
                     console.error('Network or other error after retries:', error);
                     document.getElementById('result').innerText += `\nError: Network issue or timeout. ${error.message}`;
                 }
@@ -915,32 +950,38 @@ Protocol: ${location.protocol}
 
                 if (!response.ok) {
                     console.error(`Failed to fetch registration list: HTTP ${response.status}`);
-                    return { display: null, order: null, total: 0 };
+                    const failedData = await response.json().catch(() => null);
+                    return {
+                        display: null,
+                        order: null,
+                        total: 0,
+                        apiHealth: failedData && failedData.api_health ? failedData.api_health : null
+                    };
                 }
 
                 const data = await response.json();
 
                 if (!data.success) {
                     console.warn(data.message || 'Registration order lookup failed');
-                    return { display: null, order: null, total: 0 };
+                    return { display: null, order: null, total: 0, apiHealth: data.api_health || null };
                 }
 
                 const total = Number(data.total || 0);
                 const order = data.order !== null ? Number(data.order) : null;
 
                 if (order === null) {
-                    return { display: "Not found in list", order: null, total };
+                    return { display: "Not found in list", order: null, total, apiHealth: data.api_health || null };
                 }
 
                 // Format with commas and ordinal suffix
                 const formattedOrder = getOrdinal(order);
                 const display = `${formattedOrder} Registrant`;
 
-                return { display, order, total };
+                return { display, order, total, apiHealth: data.api_health || null };
 
             } catch (error) {
                 console.error('Error in getRegistrationOrder():', error);
-                return { display: null, order: null, total: 0 };
+                return { display: null, order: null, total: 0, apiHealth: null };
             }
         }
 
@@ -975,6 +1016,7 @@ Protocol: ${location.protocol}
         async function makeApiRequestWithNewToken(scannedValue, newToken, retryCount = 3, retryDelay = 1000) {
             // Show loading indicator before the request starts
             showLoadingIndicator();
+            clearSmartpayStatus();
 
             try {
                 const response = await fetch('getScanData', {
@@ -987,14 +1029,25 @@ Protocol: ${location.protocol}
 
                 if (response.status === 401) {
                     // Unauthorized even with new token
+                    setSmartpayStatus('External Smartpay API authentication is still failing after token renewal. This hosted app is still online.', 'danger');
                     document.getElementById('result').innerText += `\nError: Unauthorized access even after renewal.`;
                     hideLoadingIndicator();
                 } else if (response.ok) {
                     const data = await response.json();
                     hideLoadingIndicator();
-                    handleScanData(data); // Handle successful response
+                    if (data.resultKey === 1) {
+                        clearSmartpayStatus();
+                        handleScanData(data);
+                    } else if (hasApiFailure(data.api_health)) {
+                        setSmartpayStatus(data.api_health.message, 'danger');
+                        document.getElementById('result').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle mr-2"></i>${data.api_health.message}</div>`;
+                    } else {
+                        clearSmartpayStatus();
+                        document.getElementById('result').innerHTML = `<span style="color: red;"><i class="fas fa-exclamation-triangle mr-2"></i>No registration found with scanned QR code.</span>`;
+                    }
                 } else {
                     hideLoadingIndicator();
+                    setSmartpayStatus('The hosted check-in server returned an unexpected response after token renewal. Check the local app/server logs.', 'warning');
                     throw new Error(`Unexpected response status: ${response.status}`);
                 }
             } catch (error) {
@@ -1005,6 +1058,7 @@ Protocol: ${location.protocol}
                     }, retryDelay);
                 } else {
                     hideLoadingIndicator();
+                    setSmartpayStatus('The hosted check-in server could not complete the retry request. This does not confirm a Smartpay outage yet.', 'warning');
                     console.error('Error after retries:', error);
                     document.getElementById('result').innerText += `\nError: ${error.message}`;
                 }
@@ -1019,9 +1073,12 @@ Protocol: ${location.protocol}
                 }
                 const data = await response.json();
                 if (data.access_token) {
+                    if (data.api_health && hasApiFailure(data.api_health)) {
+                        setSmartpayStatus(data.api_health.message, 'danger');
+                    }
                     return data.access_token; // Return the new token if present
                 } else {
-                    throw new Error('Failed to retrieve new token');
+                    throw new Error((data.api_health && data.api_health.message) || data.message || 'Failed to retrieve new token');
                 }
             } catch (error) {
                 console.error('Error renewing access token:', error);
@@ -1048,7 +1105,7 @@ Protocol: ${location.protocol}
                 insertCheckinData(result);
 
                 // NEW: Fetch registration order (async)
-                const { order, total } = await getRegistrationOrder(result.email);
+                const { order, total, apiHealth } = await getRegistrationOrder(result.email);
 
                 // Create or update a paragraph inside modal-body
                 let orderEl = document.getElementById('modalRegistrationOrder');
@@ -1060,6 +1117,8 @@ Protocol: ${location.protocol}
 
                 if (order !== null) {
                     orderEl.innerHTML = `<strong>Registration Order:</strong> #${order} of ${total} registrants`;
+                } else if (hasApiFailure(apiHealth)) {
+                    orderEl.innerHTML = `<strong>Registration Order:</strong> <span class="text-warning">Unavailable because the external Smartpay API is failing.</span>`;
                 } else {
                     orderEl.innerHTML = `<strong>Registration Order:</strong> <span class="text-danger">Not found in list</span>`;
                 }

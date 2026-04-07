@@ -230,6 +230,7 @@ include 'functions.php';
                                     <div id="waitingMessage" style="display: none;" class="mt-4">Waiting for scan
                                         input...</div>
                                     <div id="loading" style="display: none;" class="mt-4">Loading, please wait...</div>
+                                    <div id="smartpayStatus" class="mt-3"></div>
                                     <p id="result" class="mt-3 mb-0"></p>
                                 </div>
                             </div>

@@ -1,5 +1,9 @@
 let resultValuesGlobal = [];
 
+function hasApiFailure(apiHealth) {
+    return !!(apiHealth && !['ok', 'no_data'].includes(apiHealth.failure_type));
+}
+
 function setSearchStatus(message, type = 'info') {
     const searchStatus = document.getElementById('searchStatus');
     if (!searchStatus) {
@@ -97,7 +101,7 @@ async function makeApiRequest(searchValue) {
     } catch (error) {
         console.error('Error:', error);
         clearSearchResults();
-        setSearchStatus(`Search failed: ${error.message}`, 'danger');
+        setSearchStatus(`The hosted app could not complete the search request. This does not yet confirm a Smartpay outage. Details: ${error.message}`, 'danger');
     } finally {
         if (searchButton) {
             searchButton.disabled = false;
@@ -160,6 +164,8 @@ async function releaseMSP(email) {
 }
 
 function handleScanData(data) {
+    const apiHealth = data.api_health || null;
+
     if (data.resultValue && data.resultValue.length > 0) {
         resultValuesGlobal = data.resultValue;
         const tableBody = document.getElementById('searchResultsTable');
@@ -201,10 +207,18 @@ function handleScanData(data) {
             tableBody.appendChild(row);
         });
         document.getElementById('searchResultsCard').style.display = 'block';
-        setSearchStatus(`Found ${data.resultValue.length} matching registration record(s).`, 'success');
+        if (hasApiFailure(apiHealth)) {
+            setSearchStatus(`Showing available results. ${apiHealth.message}`, 'warning');
+        } else {
+            setSearchStatus(`Found ${data.resultValue.length} matching registration record(s).`, 'success');
+        }
     } else {
         clearSearchResults();
-        setSearchStatus(data.errorMsg || 'No valid data found.', 'warning');
+        if (hasApiFailure(apiHealth)) {
+            setSearchStatus(apiHealth.message, 'danger');
+        } else {
+            setSearchStatus(data.errorMsg || 'No valid data found.', 'warning');
+        }
     }
 }
 
