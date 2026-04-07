@@ -1,7 +1,9 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+require __DIR__ . '/dbConnection.php';
 require __DIR__ . '/smartpayAuth.php';
+require __DIR__ . '/eventConfig.php';
 
 // Check authentication
 if (!isset($_SESSION['access_token'])) {
@@ -24,12 +26,13 @@ if (!isset($_POST['qrcode'])) {
 }
 
 $qrcode = $_POST['qrcode'];
+$activeEventId = getActiveEventId($db);
 
-function executeScanLookup($qrcode, $accessToken, &$httpCode, &$curlError)
+function executeScanLookup($qrcode, $accessToken, $eventId, &$httpCode, &$curlError)
 {
     $api_url = SMARTPAY_API_BASE_URL . '/getScanData?' . http_build_query([
         'scan' => $qrcode,
-        'event_id' => 65
+        'event_id' => $eventId
     ]);
 
     error_log("getScanData request URL: " . $api_url);
@@ -67,7 +70,7 @@ try {
         throw new Exception($tokenError ?? 'Unable to retrieve access token');
     }
 
-    $response = executeScanLookup($qrcode, $access_token, $http_code, $curl_error);
+    $response = executeScanLookup($qrcode, $access_token, $activeEventId, $http_code, $curl_error);
 
     if ($http_code === 401) {
         $access_token = smartpayEnsureSessionToken($tokenError, true);
@@ -77,7 +80,7 @@ try {
             exit();
         }
 
-        $response = executeScanLookup($qrcode, $access_token, $http_code, $curl_error);
+        $response = executeScanLookup($qrcode, $access_token, $activeEventId, $http_code, $curl_error);
     }
 
     if ($http_code !== 200) {

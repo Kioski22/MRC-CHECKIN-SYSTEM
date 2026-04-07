@@ -6,6 +6,7 @@ session_start();
 header('Content-Type: application/json');
 require('dbConnection.php');  // Include your database connection file
 require __DIR__ . '/smartpayAuth.php';
+require __DIR__ . '/eventConfig.php';
 
 // Initialize response array
 $response = [
@@ -32,7 +33,7 @@ if (isset($_POST['search_term'])) {
         $response['errorMsg'] = "Missing 'search_term' parameter.";
     } else {
         $internalResults = searchLocalRegistrations($db, $searchTerm);
-        $externalResults = searchExternalRegistrations($searchTerm);
+        $externalResults = searchExternalRegistrations($searchTerm, getActiveEventId($db));
         $mergedResults = mergeRegistrationResults($internalResults, $externalResults);
 
         if (!empty($mergedResults)) {
@@ -84,7 +85,7 @@ function searchLocalRegistrations($db, $searchTerm) {
     return $results;
 }
 
-function searchExternalRegistrations($searchTerm) {
+function searchExternalRegistrations($searchTerm, $eventId) {
     $tokenError = null;
     $accessToken = smartpayEnsureSessionToken($tokenError);
     if ($accessToken === null) {
@@ -92,7 +93,7 @@ function searchExternalRegistrations($searchTerm) {
         return [];
     }
 
-    $externalResults = executeExternalSearchRequest($searchTerm, $accessToken, $httpCode, $curlError);
+    $externalResults = executeExternalSearchRequest($searchTerm, $eventId, $accessToken, $httpCode, $curlError);
 
     if ($httpCode === 401) {
         $accessToken = smartpayEnsureSessionToken($tokenError, true);
@@ -101,7 +102,7 @@ function searchExternalRegistrations($searchTerm) {
             return [];
         }
 
-        $externalResults = executeExternalSearchRequest($searchTerm, $accessToken, $httpCode, $curlError);
+        $externalResults = executeExternalSearchRequest($searchTerm, $eventId, $accessToken, $httpCode, $curlError);
     }
 
     if ($externalResults === null) {
@@ -112,8 +113,8 @@ function searchExternalRegistrations($searchTerm) {
     return $externalResults;
 }
 
-function executeExternalSearchRequest($searchTerm, $accessToken, &$httpCode, &$curlError) {
-    $apiUrl = SMARTPAY_API_BASE_URL . '/postSearch?search=' . urlencode($searchTerm) . '&event_id=65';
+function executeExternalSearchRequest($searchTerm, $eventId, $accessToken, &$httpCode, &$curlError) {
+    $apiUrl = SMARTPAY_API_BASE_URL . '/postSearch?search=' . urlencode($searchTerm) . '&event_id=' . intval($eventId);
     $ch = curl_init();
 
     curl_setopt_array($ch, [

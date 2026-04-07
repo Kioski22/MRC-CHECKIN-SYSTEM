@@ -153,6 +153,13 @@
                 <span>Food Test Controls</span>
             </a>
         </li>
+
+        <li class="nav-item">
+            <a class="nav-link" href="event_settings">
+                <i class="fas fa-fw fa-cog"></i>
+                <span>Event Settings</span>
+            </a>
+        </li>
     <?php } ?>
 
 

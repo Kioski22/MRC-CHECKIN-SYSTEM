@@ -18,6 +18,9 @@ if (!isset($_SESSION['user_id']) || (!isset($_SESSION['username']))) {
 date_default_timezone_set('Asia/Manila');
 
 include 'functions.php';
+require __DIR__ . '/eventConfig.php';
+
+$activeEventId = getActiveEventId($db);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -904,7 +907,7 @@ include 'functions.php';
         // Function to lookup email in API (External API - uses POST)
         async function lookupEmailInAPI(email) {
             try {
-                const apiUrl = `https://psme-api.smartpay.ph/public/index.php/api/postSearch?search=${encodeURIComponent(email)}&event_id=65`;
+                const apiUrl = `https://psme-api.smartpay.ph/public/index.php/api/postSearch?search=${encodeURIComponent(email)}&event_id=<?php echo intval($activeEventId); ?>`;
                 
 
                 

@@ -1306,14 +1306,14 @@ Protocol: ${location.protocol}
             }
         }
 
-        async function getRegistrationOrder(email, eventId = 16) {
+        async function getRegistrationOrder(email) {
             try {
                 const response = await fetch('getRegistrationOrder', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: `email=${encodeURIComponent(email || '')}&event_id=${encodeURIComponent(eventId)}`
+                    body: `email=${encodeURIComponent(email || '')}`
                 });
 
                 if (!response.ok) {
@@ -1452,7 +1452,7 @@ Protocol: ${location.protocol}
                 insertCheckinData(result);
 
                 // NEW: Fetch registration order (async)
-                const { order, total } = await getRegistrationOrder(result.email, 16);
+                const { order, total } = await getRegistrationOrder(result.email);
 
                 // Create or update a paragraph inside modal-body
                 let orderEl = document.getElementById('modalRegistrationOrder');

@@ -1,7 +1,9 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+require __DIR__ . '/dbConnection.php';
 require __DIR__ . '/smartpayAuth.php';
+require __DIR__ . '/eventConfig.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -22,7 +24,11 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $email = trim((string) ($_POST['email'] ?? ''));
-$eventId = isset($_POST['event_id']) ? intval($_POST['event_id']) : 16;
+$eventId = getActiveEventId($db);
+
+if (isset($_POST['event_id']) && intval($_POST['event_id']) > 0) {
+    $eventId = intval($_POST['event_id']);
+}
 
 if ($email === '') {
     http_response_code(400);

@@ -1,6 +1,8 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+require __DIR__ . '/smartpayAuth.php';
+require __DIR__ . '/eventConfig.php';
 
 // Check authentication
 if (!isset($_SESSION['access_token'])) {
@@ -114,18 +116,23 @@ function searchInternalFoodDatabase($searchTerm, $db) {
 
 function searchExternalPSMEAPI($searchTerm) {
     try {
-        // Get access token from session
-        if (!isset($_SESSION['access_token'])) {
-            throw new Exception('No access token available');
+        global $db;
+
+        $tokenError = null;
+        $accessToken = smartpayEnsureSessionToken($tokenError);
+        if ($accessToken === null) {
+            throw new Exception($tokenError ?: 'No access token available');
         }
+
+        $eventId = getActiveEventId($db);
         
-        $apiUrl = "https://psme-api.smartpay.ph/public/index.php/api/postSearch?search=" . urlencode($searchTerm) . "&event_id=65";
+        $apiUrl = SMARTPAY_API_BASE_URL . "/postSearch?search=" . urlencode($searchTerm) . "&event_id=" . intval($eventId);
         
         $context = stream_context_create([
             'http' => [
                 'method' => 'POST',
                 'header' => [
-                    'Authorization: Bearer ' . $_SESSION['access_token'],
+                    'Authorization: Bearer ' . $accessToken,
                     'Content-Type: application/json'
                 ],
                 'timeout' => 10
