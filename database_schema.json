@@ -427,7 +427,7 @@
   },
   "external_apis": {
     "psme_api": {
-      "url": "https://psme-api.smartpay.ph/public/index.php/api/postSearch",
+      "url": "https://psme-api.smartpay.ph/postSearch",
       "method": "POST",
       "authentication": "Bearer token",
       "parameters": {

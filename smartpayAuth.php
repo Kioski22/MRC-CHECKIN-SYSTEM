@@ -3,7 +3,7 @@
 require_once __DIR__ . '/dbConnection.php';
 require_once __DIR__ . '/apiHealth.php';
 
-const SMARTPAY_API_BASE_URL = 'https://psme-api.smartpay.ph/public/index.php/api';
+const SMARTPAY_API_BASE_URL = 'https://psme-api.smartpay.ph';
 const SMARTPAY_ADMIN_USERNAME = 'psme';
 const SMARTPAY_ADMIN_PASSWORD = '9hbpRSKahp@T';
 

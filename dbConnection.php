@@ -1,20 +1,40 @@
 <?php
-// Database connection settings
-$host = 'localhost';        // Database host (usually localhost)
-$db_user = 'icto_randy4'; // Database username
-$db_password = '091902Rands@'; // Database password
-$db_name = 'mrc';  // Database name
+// Database connection settings (env vars override hardcoded defaults)
+$host = getenv('DB_HOST') ?: 'localhost';
+$db_name = getenv('DB_NAME') ?: 'mrc';
+$db_user = getenv('DB_USER') ?: 'icto_randy4';
+$db_password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : '091902Rands@';
 
-// Create a new MySQLi connection
-$db = new mysqli($host, $db_user, $db_password, $db_name);
+mysqli_report(MYSQLI_REPORT_OFF);
 
-// Check the connection
-if ($db->connect_error) {
-    die("Connection failed: " . $db->connect_error);
+// Try primary credentials first, then common local XAMPP fallback.
+$connectionCandidates = [
+    [$host, $db_user, $db_password, $db_name],
+];
+
+$normalizedHost = strtolower((string) $host);
+if (($normalizedHost === 'localhost' || $normalizedHost === '127.0.0.1') && $db_user !== 'root') {
+    $connectionCandidates[] = [$host, 'root', '', $db_name];
 }
 
-// Optionally, you can set the character set to UTF-8
-$db->set_charset("utf8mb4");
+$db = null;
+$lastError = 'Unknown database connection error.';
 
-// Now you can use $conn for any database queries
+foreach ($connectionCandidates as $candidate) {
+    [$candidateHost, $candidateUser, $candidatePassword, $candidateDb] = $candidate;
+    $candidateConnection = @new mysqli($candidateHost, $candidateUser, $candidatePassword, $candidateDb);
+
+    if (!$candidateConnection->connect_errno) {
+        $db = $candidateConnection;
+        break;
+    }
+
+    $lastError = $candidateConnection->connect_error;
+}
+
+if (!$db) {
+    die('Connection failed: ' . $lastError);
+}
+
+$db->set_charset('utf8mb4');
 ?>

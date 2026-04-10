@@ -94,7 +94,7 @@ This document provides a comprehensive reference for the PSME National Conventio
 ## API INTEGRATION
 
 ### External PSME API
-**Endpoint**: https://psme-api.smartpay.ph/public/index.php/api/postSearch  
+**Endpoint**: https://psme-api.smartpay.ph/postSearch  
 **Method**: POST  
 **Authentication**: Bearer token (stored in users.access_token)  
 **Purpose**: Look up member information for food registration mapping
