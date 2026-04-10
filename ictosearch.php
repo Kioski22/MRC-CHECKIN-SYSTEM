@@ -114,7 +114,7 @@ function searchExternalRegistrations($searchTerm, $eventId) {
     if ($accessToken === null) {
         error_log('ictosearch could not get access token: ' . $tokenError);
         $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
-        $meta = apiHealthBuildMeta('smartpay', 'postSearch', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?: 'External Smartpay API authentication failed. This hosted app is still online.');
+        $meta = smartpayBuildTokenFailureMeta('postSearch', $tokenError ?: 'External Smartpay API authentication failed. This hosted app is still online.', $durationMs);
         return [
             'items' => [],
             'api_health' => $meta,
@@ -128,7 +128,7 @@ function searchExternalRegistrations($searchTerm, $eventId) {
         if ($accessToken === null) {
             error_log('ictosearch token refresh failed: ' . $tokenError);
             $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
-            $meta = apiHealthBuildMeta('smartpay', 'postSearch', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?: 'External Smartpay API authentication failed. This hosted app is still online.');
+            $meta = smartpayBuildTokenFailureMeta('postSearch', $tokenError ?: 'External Smartpay API authentication failed. This hosted app is still online.', $durationMs);
             return [
                 'items' => [],
                 'api_health' => $meta,

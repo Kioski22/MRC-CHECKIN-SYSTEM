@@ -83,7 +83,7 @@ $tokenError = null;
 $accessToken = smartpayEnsureSessionToken($tokenError);
 if ($accessToken === null) {
     $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
-    $meta = apiHealthBuildMeta('smartpay', 'getRegisterMember', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?? 'External Smartpay API authentication failed. This hosted app is still online.');
+    $meta = smartpayBuildTokenFailureMeta('getRegisterMember', $tokenError ?? 'External Smartpay API authentication failed. This hosted app is still online.', $durationMs);
     http_response_code(502);
     echo json_encode([
         'success' => false,
@@ -91,7 +91,7 @@ if ($accessToken === null) {
         'technical_error' => $tokenError ?? 'Unable to retrieve access token',
         'api_health' => $meta,
         'status_source' => 'upstream',
-        'failure_type' => 'auth_failure'
+        'failure_type' => $meta['failure_type']
     ]);
     exit();
 }
@@ -101,7 +101,7 @@ if ($httpCode === 401) {
     $accessToken = smartpayEnsureSessionToken($tokenError, true);
     if ($accessToken === null) {
         $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
-        $meta = apiHealthBuildMeta('smartpay', 'getRegisterMember', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?? 'External Smartpay API authentication failed. This hosted app is still online.');
+        $meta = smartpayBuildTokenFailureMeta('getRegisterMember', $tokenError ?? 'External Smartpay API authentication failed. This hosted app is still online.', $durationMs);
         http_response_code(401);
         echo json_encode([
             'success' => false,
@@ -109,7 +109,7 @@ if ($httpCode === 401) {
             'technical_error' => $tokenError ?? 'Unauthorized',
             'api_health' => $meta,
             'status_source' => 'upstream',
-            'failure_type' => 'auth_failure'
+            'failure_type' => $meta['failure_type']
         ]);
         exit();
     }

@@ -120,8 +120,9 @@ function searchExternalPSMEAPI($searchTerm) {
         $accessToken = smartpayEnsureSessionToken($tokenError);
         if ($accessToken === null) {
             $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
-            smartpayRecordHealth('foodPostSearch', 'auth_failure', $tokenError ?: 'Food registrant search could not authenticate with Smartpay.', 401, $durationMs, 'upstream');
-            throw new Exception($tokenError ?: 'No access token available');
+            $meta = smartpayBuildTokenFailureMeta('foodPostSearch', $tokenError ?: 'Food registrant search could not authenticate with Smartpay.', $durationMs);
+            smartpayRecordHealth('foodPostSearch', $meta['failure_type'], $meta['message'], $meta['http_code'], $durationMs, 'upstream');
+            throw new Exception($meta['message']);
         }
 
         $eventId = getActiveEventId($db);

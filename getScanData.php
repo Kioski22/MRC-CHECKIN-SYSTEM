@@ -66,7 +66,7 @@ try {
     $access_token = smartpayEnsureSessionToken($tokenError);
     if ($access_token === null) {
         $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
-        $meta = apiHealthBuildMeta('smartpay', 'getScanData', 'auth_failure', 'upstream', 401, $durationMs, $tokenError ?? 'Unable to retrieve access token');
+        $meta = smartpayBuildTokenFailureMeta('getScanData', $tokenError ?? 'Unable to retrieve access token', $durationMs);
         echo json_encode([
             'resultKey' => 0,
             'resultValue' => [],
@@ -82,8 +82,10 @@ try {
     if ($http_code === 401) {
         $access_token = smartpayEnsureSessionToken($tokenError, true);
         if ($access_token === null) {
+            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+            $meta = smartpayBuildTokenFailureMeta('getScanData', $tokenError ?? 'Unauthorized', $durationMs);
             http_response_code(401);
-            echo json_encode(['success' => false, 'message' => $tokenError ?? 'Unauthorized']);
+            echo json_encode(['success' => false, 'message' => $meta['message'], 'api_health' => $meta]);
             exit();
         }
 
