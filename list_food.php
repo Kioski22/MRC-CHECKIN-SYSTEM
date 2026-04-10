@@ -1,19 +1,12 @@
 ﻿<?php
 session_start();
 include 'dbConnection.php';
+require_once __DIR__ . '/auth.php';
 
-if (!isset($_SESSION['access_token'])) {
-    header("Location: login.php");
-    exit();
-}
+requireAuthenticatedUser();
 
-if (!isset($_SESSION['user_id']) || (!isset($_SESSION['username']))) {
-    header("Location: login.php");
-    exit();
-} else {
-    $user_id = $_SESSION['user_id'];
-    $username = $_SESSION['username'];
-}
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'];
 
 date_default_timezone_set('Asia/Manila');
 
@@ -907,42 +900,18 @@ $activeEventId = getActiveEventId($db);
         // Function to lookup email in API (External API - uses POST)
         async function lookupEmailInAPI(email) {
             try {
-                const apiUrl = `https://psme-api.smartpay.ph/public/index.php/api/postSearch?search=${encodeURIComponent(email)}&event_id=<?php echo intval($activeEventId); ?>`;
-                
-
-                
-                const response = await fetch(apiUrl, {
+                const response = await fetch('ictosearch', {
                     method: 'POST',
                     headers: {
-                        'Authorization': 'Bearer <?php echo $_SESSION['access_token']; ?>'
-                    }
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: new URLSearchParams({
+                        search_term: email
+                    })
                 });
-
-                // Handle token renewal if needed
-                if (response.status === 401) {
-
-                    const newToken = await renewAccessToken();
-                    const retryResponse = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${newToken}`
-                        }
-                    });
-                    
-                    if (retryResponse.ok) {
-                        const result = await retryResponse.json();
-
-                        
-                        return result;
-                    } else {
-                        throw new Error(`API request failed after token renewal: ${retryResponse.status}`);
-                    }
-                }
 
                 if (response.ok) {
                     const result = await response.json();
-
-                    
                     return result;
                 } else {
                     throw new Error(`API request failed: ${response.status}`);

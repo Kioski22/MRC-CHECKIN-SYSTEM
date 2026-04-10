@@ -1,14 +1,12 @@
 <?php
 session_start();
 include 'dbConnection.php';
+require_once __DIR__ . '/auth.php';
 
 header('Content-Type: application/json');
 
 // Check if user is authenticated
-if (!isset($_SESSION['access_token']) || !isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit();
-}
+requireAuthenticatedUser(true);
 
 // Only allow GET requests
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {

@@ -1,12 +1,10 @@
 <?php
 session_start();
 include 'dbConnection.php';
+require_once __DIR__ . '/auth.php';
 
 // Check user authentication
-if (!isset($_SESSION['access_token'])) {
-    echo json_encode(['data' => [], 'error' => 'User not authenticated']);
-    exit();
-}
+requireAuthenticatedUser(true);
 
 // Set the timezone to Asia/Manila
 date_default_timezone_set('Asia/Manila');

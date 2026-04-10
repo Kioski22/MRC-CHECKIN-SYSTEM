@@ -1,11 +1,12 @@
 <?php
 session_start();
 include 'dbConnection.php';
+require_once __DIR__ . '/auth.php';
 
 header('Content-Type: application/json');
 
 // Check if user is authenticated (skip for GET method testing with Python HTTP server)
-if (!isset($_SESSION['access_token']) || !isset($_SESSION['user_id'])) {
+if (!isAuthenticatedUser()) {
     // Allow GET method for testing with Python HTTP server
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
         echo json_encode(['success' => false, 'message' => 'Unauthorized']);

@@ -1,11 +1,9 @@
 <?php
 session_start();
 include 'dbConnection.php';
+require_once __DIR__ . '/auth.php';
 
-if (!isset($_SESSION['access_token'])) {
-    header("Location: login.php");
-    exit();
-}
+requireAuthenticatedUser();
 ?>
 <!DOCTYPE html>
 <html lang="en">

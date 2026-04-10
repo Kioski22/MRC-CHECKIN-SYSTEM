@@ -1,13 +1,10 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+require_once __DIR__ . '/auth.php';
 
 // Check authentication
-if (!isset($_SESSION['access_token'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
-    exit();
-}
+requireAuthenticatedUser(true);
 
 include 'dbConnection.php';
 

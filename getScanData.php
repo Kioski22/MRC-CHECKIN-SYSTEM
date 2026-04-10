@@ -1,16 +1,13 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+require_once __DIR__ . '/auth.php';
 require __DIR__ . '/dbConnection.php';
 require __DIR__ . '/smartpayAuth.php';
 require __DIR__ . '/eventConfig.php';
 
 // Check authentication
-if (!isset($_SESSION['access_token'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit();
-}
+requireAuthenticatedUser(true);
 
 // Check if request method is POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

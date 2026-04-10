@@ -1,19 +1,12 @@
 ﻿<?php
 session_start();
 include 'dbConnection.php';
+require_once __DIR__ . '/auth.php';
 
-if (!isset($_SESSION['access_token'])) {
-    header("Location: login.php");
-    exit();
-}
+requireAuthenticatedUser();
 
-if (!isset($_SESSION['user_id']) || (!isset($_SESSION['username']))) {
-    header("Location: login.php");
-    exit();
-} else {
-    $user_id = $_SESSION['user_id'];
-    $username = $_SESSION['username'];
-}
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'];
 
 include 'functions.php';
 include 'test_config.php';
