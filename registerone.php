@@ -81,7 +81,7 @@ if ($registration_success) {
                                                     <select class="form-control" id="membership_type" name="membership_type" required onchange="updatePricing()">
                                                         <option value="" disabled selected>Select membership type</option>
                                                         <option value="1">Life / Associate Member</option>
-                                                        <option value="2">Guest / Non-member</option>
+                                                        <option value="2">Delegate</option>
                                                         <option value="3">Regular Member</option>
                                                     </select>
                                                 </div>
@@ -420,7 +420,7 @@ if ($registration_success) {
                     text: 'ME Graduate'
                 }
             ],
-            2: [ // Guest / Non-member
+            2: [ // Delegate
                 {
                     value: 'certified_plant_mechanic',
                     text: 'Certified Plant Mechanic'
@@ -586,51 +586,36 @@ if ($registration_success) {
         function updateDiscount(discountType, discountName) {
             const membershipSelect = document.getElementById("membership_type");
             const selectedValue = membershipSelect.value;
-            const priceDetail = document.getElementById("price_detail");
-            const currentPrice = parseFloat(priceDetail.textContent.replace(/[â‚±,]/g, '')); // Parse the current price as a number
 
             // Define which membership types allow which discounts
             const allowedDiscounts = {
-                "3": ["senior_citizen", "pwd", "new_board_passer", "free"], // Regular Member can apply all discounts
-                "2": ["new_board_passer", "free"], // Guest/Non-member can apply New Board Passer discount and Free
-                "1": ["free"], // Life / Associate Member can only apply Free discount
+                "3": ["senior_citizen", "pwd", "free"],
+                "2": ["free"],
+                "1": ["senior_citizen", "pwd", "free"],
             };
 
             // Check if the discount can be applied based on selected membership type
             if (allowedDiscounts[selectedValue]?.includes(discountType)) {
                 const discountCheckbox = document.getElementById(discountType);
-                const otherDiscountTypes = allowedDiscounts[selectedValue].filter(type => type !== discountType);
-
                 if (discountCheckbox.checked) {
                     if (discountType === 'free') {
-                        // If Free is checked, set price to 0 and disable payment
-                        priceDetail.textContent = "â‚±0.00";
-                        //document.getElementById('accept_payment_button').disabled = true;
                         showDiscountToast(`Registration fee waived for this participant.`, `Free Registration`);
                     } else {
-                        // Handle other discounts only if Free is not checked
-                        if (!document.getElementById('free').checked) {
-                            if (currentPrice === 2800) {
-                                // If the current price is already 2800, show a message and stop applying further discounts
-                                showDiscountToast('No further discounts can be applied. Maximum discount reached.', 'Discount Not Applicable');
-                            } else {
-                                // Apply discount and reduce price to 2800
-                                priceDetail.textContent = "â‚±2,800.00";
-                                showDiscountToast(`${discountName} discount applied.`, 'Registration Fee Updated');
-                            }
-                        }
+                        showDiscountToast(`${discountName} discount applied.`, 'Registration Fee Updated');
                     }
                 } else {
-                    // Handle discount removal and ensure Free is prioritized if still checked
-                    const anyOtherChecked = otherDiscountTypes.some(type => document.getElementById(type).checked);
-                    if (!anyOtherChecked) {
-                        updatePricing(); // Recalculate price
-                    }
                     showDiscountToast(`${discountName} discount removed.`, 'Registration Fee Updated');
                 }
+
+                updatePricing();
             } else {
+                const discountCheckbox = document.getElementById(discountType);
+                if (discountCheckbox) {
+                    discountCheckbox.checked = false;
+                }
                 // Show a toast if discount is not applicable for selected membership type
                 showDiscountToast(`${discountName} discount is not applicable for this membership type.`, 'Discount Not Applicable');
+                updatePricing();
             }
         }
 
@@ -676,8 +661,9 @@ if ($registration_success) {
         function updatePricing() {
             const membershipType = document.getElementById("membership_type").value;
             const priceDetail = document.getElementById("price_detail");
-            const discountCheckboxes = ["senior_citizen", "pwd", "new_board_passer", "free"];
-            let discountApplied = false;
+            const isSenior = document.getElementById("senior_citizen")?.checked;
+            const isPwd = document.getElementById("pwd")?.checked;
+            const isFree = document.getElementById("free")?.checked;
 
             // Show the details card sections if a membership type is selected
             if (membershipType) {
@@ -687,32 +673,22 @@ if ($registration_success) {
                 document.getElementById("proceed-card").style.display = "block";
             }
 
-            // Check if any discount checkboxes are already checked
-            discountCheckboxes.forEach((checkboxId) => {
-                const checkbox = document.getElementById(checkboxId);
-                if (checkbox && checkbox.checked) {
-                    discountApplied = true;
-                }
-            });
+            if (isFree) {
+                priceDetail.textContent = "â‚±0.00";
+                updatePrcTypeOptions();
+                return;
+            }
 
             // Set the pricing based on the membership type and discount status
             switch (membershipType) {
                 case "1": // Life / Associate Member
-                    priceDetail.textContent = discountApplied ? "â‚±2,800.00" : "â‚±2,800.00";
+                    priceDetail.textContent = (isSenior || isPwd) ? "â‚±3,200.00" : "â‚±3,500.00";
                     break;
-                case "2": // Guest / Non-member
-                    if (document.getElementById("new_board_passer").checked) {
-                        priceDetail.textContent = "â‚±2,800.00"; // Discounted price for Guest / Non-member if New Board Passer discount is applied
-                    } else {
-                        priceDetail.textContent = "â‚±4,500.00"; // Regular price for Guest / Non-member
-                    }
+                case "2": // Delegate
+                    priceDetail.textContent = "â‚±4,500.00";
                     break;
                 case "3": // Regular Member
-                    if (discountApplied) {
-                        priceDetail.textContent = "â‚±2,800.00"; // Discounted price for Regular Member if discount is applied
-                    } else {
-                        priceDetail.textContent = "â‚±3,500.00"; // Regular price for Regular Member
-                    }
+                    priceDetail.textContent = (isSenior || isPwd) ? "â‚±3,200.00" : "â‚±4,000.00";
                     break;
                 default:
                     priceDetail.textContent = "â‚±0.00"; // Default price if nothing is selected
