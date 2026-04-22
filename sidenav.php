@@ -60,6 +60,12 @@
                     <span>Register</span>
                 </a>
             </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="walkin_dashboard.php">
+                    <i class="fas fa-fw fa-chart-line"></i>
+                    <span>Monitoring</span>
+                </a>
+            </li>
         </ul>
     <?php endif; ?>
 
