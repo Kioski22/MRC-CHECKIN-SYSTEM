@@ -1,12 +1,7 @@
 <?php
 session_start();
 require 'dbConnection.php'; // Database connection file
-require 'PHPMailer/src/PHPMailer.php'; // Include PHPMailer
-require 'PHPMailer/src/SMTP.php'; // Include SMTP for sending email
-require 'PHPMailer/src/Exception.php'; // Include Exception for error handling
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require 'gmail_api_mailer.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = trim($_POST['email']);
@@ -41,42 +36,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->bind_param('si', $email, $otp);
         $stmt->execute();
 
-        // Send OTP using PHPMailer
-        $mail = new PHPMailer(true);
-        try {
-            //Server settings
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com'; // Specify SMTP server (e.g., smtp.gmail.com for Gmail)
-            $mail->SMTPAuth = true;
-            $mail->Username = 'icto@psmeinc.org.ph'; // SMTP username
-            $mail->Password = 'xjmt szqn gqzj bosz'; // SMTP password or App Password
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // Use ENCRYPTION_STARTTLS for most common providers like Gmail
-            $mail->Port = 587; // Port used for TLS connections
+        $mailDefaults = gmail_api_mail_defaults();
+        $fromEmail = $mailDefaults['from_address'] ?: 'icto@psmeinc.org.ph';
+        $fromName = $mailDefaults['from_name'] ?: 'PSME ICTO';
+        $subject = 'Your OTP for Password Reset';
+        $htmlBody = 'Your OTP is <b>' . $otp . '</b>. It is valid for 10 minutes.';
+        $textBody = 'Your OTP is ' . $otp . '. It is valid for 10 minutes.';
+        $mailError = '';
 
-            //Recipients
-            $mail->setFrom('icto@psmeinc.org.ph', 'PSME ICTO'); // Adjust 'Your Website' to your desired "From" name
-            $mail->addAddress($email);
-
-            //Content
-            $mail->isHTML(true);
-            $mail->Subject = 'Your OTP for Password Reset';
-            $mail->Body = 'Your OTP is <b>' . $otp . '</b>. It is valid for 10 minutes.';
-
-            $mail->send();
-
+        if (send_via_gmail_api($email, '', $subject, $htmlBody, $textBody, $fromEmail, $fromName, $mailError)) {
             // If successful, redirect to forgot-verify.php
             $_SESSION['email'] = $email; // Store the email in the session for verification
             $_SESSION['error'] = 'OTP sent to ' . $email;
             header('Location: forgot-verify.php');
             exit();
-        } catch (Exception $e) {
-            // Log the error message for debugging
-            error_log('Mail error: ' . $mail->ErrorInfo);
-
-            // If email sending fails, return an error
-            $_SESSION['error'] = 'Failed to send OTP. Please try again.';
-            header('Location: forgot-password.php');
-            exit();
         }
+
+        // Log the error message for debugging
+        error_log('Mail error: ' . $mailError);
+
+        // If email sending fails, return an error
+        $_SESSION['error'] = 'Failed to send OTP. Please try again.';
+        header('Location: forgot-password.php');
+        exit();
     }
 }
