@@ -172,17 +172,17 @@ if ($stmt->execute()) {
     }
     $name = trim($first_name . ' ' . $middle_name . ' ' . $last_name . ' ' . $name_suffix);
 
-    $subject = 'Your e-Ticket for the 72nd National Convention';
+    $subject = 'Your e-Ticket for the PSME 14TH MINDANAO REGIONAL CONFERENCE';
     $htmlBody = "
     <html>
     <body style='font-family: Arial, sans-serif;'>
         <div style='text-align: center;'>
             <img src='{$logo_url}' alt='PSME Logo' style='width: 150px;'><br>
-            <h2>You're going to the 73rd National Convention!</h2>
+            <h2>You're going to the PSME 14TH MINDANAO REGIONAL CONFERENCE!</h2>
             <h4>Reference No. {$qrcode}</h4>
-            <p>73rd PSME National Convention in SMX Manila</p>
-            <p>16 - 18 October 2024</p>
-            <p>SMX Convention Center Manila, Pasay City, Philippines</p>
+            <p>PSME 14TH MINDANAO REGIONAL CONFERENCE</p>
+            <p>23-25 APRIL 2026</p>
+            <p>SM CDO DOWNTOWN, 5TH FLOOR EVENT HALL CAGAYAN DE ORO CITY</p>
         </div>
         <hr>
         <div style='text-align: center;'>
@@ -205,11 +205,11 @@ if ($stmt->execute()) {
     </body>
     </html>";
 
-    $textBody = "You're going to the 73rd National Convention!\n"
+    $textBody = "You're going to the PSME 14TH MINDANAO REGIONAL CONFERENCE!\n"
         . "Reference No. {$qrcode}\n"
-        . "73rd PSME National Convention in SMX Manila\n"
-        . "16 - 18 October 2024\n"
-        . "SMX Convention Center Manila, Pasay City, Philippines\n\n"
+        . "PSME 14TH MINDANAO REGIONAL CONFERENCE\n"
+        . "23-25 APRIL 2026\n"
+        . "SM CDO DOWNTOWN, 5TH FLOOR EVENT HALL CAGAYAN DE ORO CITY\n\n"
         . "e-Ticket QR Code: {$qrcode_url}\n\n"
         . "Ticket Holder:\n"
         . "Name: {$name}\n"
