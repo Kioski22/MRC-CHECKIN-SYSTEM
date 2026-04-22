@@ -21,8 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id']) && isset($
         $safePassword = htmlspecialchars((string) $new_password, ENT_QUOTES, 'UTF-8');
 
         $mailDefaults = gmail_api_mail_defaults();
-        $fromEmail = $mailDefaults['from_address'] ?: 'icto@psmeinc.org.ph';
-        $fromName = $mailDefaults['from_name'] ?: 'Password Reset';
+        $fromEmail = $mailDefaults['from_address'];
+        $fromName = $mailDefaults['from_name'];
         $subject = 'Your Password Has Been Reset';
         $htmlBody = "<p>Hello <strong>{$safeUsername}</strong>,</p><p>Your new password is: <strong>{$safePassword}</strong></p><p>Please log in and change your password as soon as possible.</p>";
         $textBody = "Hello {$username},\n\nYour new password is: {$new_password}\n\nPlease log in and change your password as soon as possible.";

@@ -37,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute();
 
         $mailDefaults = gmail_api_mail_defaults();
-        $fromEmail = $mailDefaults['from_address'] ?: 'icto@psmeinc.org.ph';
-        $fromName = $mailDefaults['from_name'] ?: 'PSME ICTO';
+        $fromEmail = $mailDefaults['from_address'];
+        $fromName = $mailDefaults['from_name'];
         $subject = 'Your OTP for Password Reset';
         $htmlBody = 'Your OTP is <b>' . $otp . '</b>. It is valid for 10 minutes.';
         $textBody = 'Your OTP is ' . $otp . '. It is valid for 10 minutes.';

@@ -3,8 +3,10 @@
 /**
  * Send email using Gmail API with OAuth2 refresh token flow.
  *
- * Primary source: config_gmail_reference.php
- * Fallback source: environment variables
+ * Strict mode:
+ * - Refresh token and credentials path must come from token_reference.php or config_gmail_reference.php
+ * - Client credentials must come from credentials JSON
+ * - Sending always uses Gmail API
  */
 
 function gmail_api_base64url_encode($data)
@@ -115,25 +117,25 @@ function gmail_api_get_access_token(&$error)
     $credentialsPath = (string) ($tokenReference['TICKET_GMAIL_CREDENTIALS_PATH'] ?? ($gmailApi['credentials_path'] ?? ''));
     $refreshToken = (string) ($tokenReference['TICKET_GMAIL_REFRESH_TOKEN'] ?? ($gmailApi['refresh_token'] ?? ''));
 
+    if ($credentialsPath === '') {
+        $error = 'Strict Gmail API mode: missing TICKET_GMAIL_CREDENTIALS_PATH in token_reference.php or gmail_api.credentials_path in config.';
+        return null;
+    }
+
     if ($refreshToken === '') {
-        $refreshToken = (string) (getenv('TICKET_GMAIL_REFRESH_TOKEN') ?: getenv('GMAIL_API_REFRESH_TOKEN') ?: '');
+        $error = 'Strict Gmail API mode: missing TICKET_GMAIL_REFRESH_TOKEN in token_reference.php or gmail_api.refresh_token in config.';
+        return null;
     }
 
-    $clientId = (string) (getenv('GMAIL_API_CLIENT_ID') ?: '');
-    $clientSecret = (string) (getenv('GMAIL_API_CLIENT_SECRET') ?: '');
-    $tokenUri = (string) (getenv('GMAIL_API_TOKEN_URI') ?: 'https://oauth2.googleapis.com/token');
-
-    if ($clientId === '' || $clientSecret === '') {
-        $credentials = gmail_api_credentials_from_json($credentialsPath, $credentialsError);
-        if (is_array($credentials)) {
-            $clientId = $credentials['client_id'];
-            $clientSecret = $credentials['client_secret'];
-            $tokenUri = $credentials['token_uri'];
-        } elseif ($clientId === '' || $clientSecret === '') {
-            $error = $credentialsError;
-            return null;
-        }
+    $credentials = gmail_api_credentials_from_json($credentialsPath, $credentialsError);
+    if (!is_array($credentials)) {
+        $error = $credentialsError;
+        return null;
     }
+
+    $clientId = $credentials['client_id'];
+    $clientSecret = $credentials['client_secret'];
+    $tokenUri = $credentials['token_uri'];
 
     if (!$clientId || !$clientSecret || !$refreshToken) {
         $error = 'Missing Gmail API OAuth configuration (client_id, client_secret, or refresh_token).';

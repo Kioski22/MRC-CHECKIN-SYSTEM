@@ -2,12 +2,7 @@
 session_start();
 require('dbConnection.php');  // Database connection
 require('libs/phpqrcode/qrlib.php');
-require 'PHPMailer/src/PHPMailer.php'; // Include PHPMailer
-require 'PHPMailer/src/SMTP.php'; // Include SMTP for sending email
-require 'PHPMailer/src/Exception.php'; // Include Exception for error handling
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require 'gmail_api_mailer.php';
 
 // Function to generate a unique registration ID number
 function generateUniqueRegistrationNumber($db)
@@ -162,44 +157,23 @@ $stmt->bind_param(
 
 // Execute the statement
 if ($stmt->execute()) {
+    // Define placeholders
+    $logo_url = 'https://icto.psmeinc.org.ph/checkin/img/73rdNatCon.jpg';
 
-    $mail = new PHPMailer(true);
+    // Set timezone to Asia/Manila for Philippine time
+    date_default_timezone_set('Asia/Manila');
+    $timestamp = date('F d, Y H:i:s');
 
-    try {
-        // Server settings
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com'; // Replace with your SMTP server
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'icto@psmeinc.org.ph'; // Replace with your SMTP username
-        $mail->Password   = 'xjmt szqn gqzj bosz'; // Replace with your SMTP password
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+    if ($middle_name == 'N/A' || $middle_name == NULL) {
+        $middle_name = '';
+    }
+    if ($name_suffix == 'N/A' || $name_suffix == NULL) {
+        $name_suffix = '';
+    }
+    $name = trim($first_name . ' ' . $middle_name . ' ' . $last_name . ' ' . $name_suffix);
 
-        // Recipients
-        $mail->setFrom('icto@psmeinc.org.ph', 'PSME National Convention');
-        $mail->addAddress($personal_email); // Replace with recipient's email
-
-        // Content
-        $mail->isHTML(true);
-        $mail->Subject = 'Your e-Ticket for the 72nd National Convention';
-
-        // Define placeholders
-        $logo_url = 'https://icto.psmeinc.org.ph/checkin/img/73rdNatCon.jpg'; // Replace with dynamic QR code URL
-        
-        // Set timezone to Asia/Manila for Philippine time
-        date_default_timezone_set('Asia/Manila');
-        $timestamp = date('F d, Y H:i:s');
-        
-        if ($middle_name == 'N/A' || $middle_name == NULL) {
-            $middle_name = '';
-        }
-        if ($name_suffix == 'N/A' || $name_suffix == NULL) {
-            $name_suffix = '';
-        }
-        $name = $first_name . ' ' . $middle_name . ' ' . $last_name . ' ' . $name_suffix;
-
-        // HTML email content
-        $mail->Body = "
+    $subject = 'Your e-Ticket for the 72nd National Convention';
+    $htmlBody = "
     <html>
     <body style='font-family: Arial, sans-serif;'>
         <div style='text-align: center;'>
@@ -231,10 +205,26 @@ if ($stmt->execute()) {
     </body>
     </html>";
 
-        // Send the email
-        $mail->send();
-    } catch (Exception $e) {
-        echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+    $textBody = "You're going to the 73rd National Convention!\n"
+        . "Reference No. {$qrcode}\n"
+        . "73rd PSME National Convention in SMX Manila\n"
+        . "16 - 18 October 2024\n"
+        . "SMX Convention Center Manila, Pasay City, Philippines\n\n"
+        . "e-Ticket QR Code: {$qrcode_url}\n\n"
+        . "Ticket Holder:\n"
+        . "Name: {$name}\n"
+        . "Mobile: {$mobile_number}\n"
+        . "Email: {$personal_email}\n"
+        . "Reference No. {$qrcode}\n"
+        . "Issued On: {$timestamp}\n";
+
+    $mailDefaults = gmail_api_mail_defaults();
+    $fromEmail = $mailDefaults['from_address'];
+    $fromName = $mailDefaults['from_name'];
+    $mailError = '';
+
+    if (!send_via_gmail_api($personal_email, $name, $subject, $htmlBody, $textBody, $fromEmail, $fromName, $mailError)) {
+        echo "Message could not be sent. Mailer Error: {$mailError}";
         exit();
     }
 
