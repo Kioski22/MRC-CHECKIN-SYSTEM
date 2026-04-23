@@ -66,7 +66,30 @@ if ($registration_success) {
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-                    <form method="post" action="submit_registration"> <!-- Unified form starts here -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Bulk Registration (CSV)</h6>
+                            <a href="download_bulk_registration_template.php" class="btn btn-sm btn-outline-primary">Download CSV Template</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="bulkCsvFile">Upload CSV File</label>
+                                <input type="file" class="form-control-file" id="bulkCsvFile" accept=".csv">
+                                <small class="form-text text-muted">Use the template file to ensure headers match exactly.</small>
+                            </div>
+                            <div id="bulkPreviewSummary" class="mb-3 text-muted"></div>
+                            <div class="table-responsive" style="max-height: 360px; overflow-y: auto; display: none;" id="bulkPreviewWrapper">
+                                <table class="table table-sm table-bordered" id="bulkPreviewTable">
+                                    <thead class="thead-light"></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                            <div id="bulkPreviewErrors" class="mt-3"></div>
+                            <button type="button" class="btn btn-success mt-3" id="approveBulkUpload" disabled>Approve and Upload to Database</button>
+                        </div>
+                    </div>
+
+                    <form method="post" action="submit_registration" id="singleRegistrationForm"> <!-- Unified form starts here -->
                         <div class="row">
                             <div class="col-lg-3">
                                 <div class="row">
@@ -874,12 +897,216 @@ if ($registration_success) {
             document.querySelector("form").submit();
         }
 
-        // Attach an event listener to the form submission
-        document.querySelector("form").addEventListener("submit", function(event) {
+        // Attach an event listener to the single registration form submission
+        document.getElementById("singleRegistrationForm").addEventListener("submit", function(event) {
             event.preventDefault(); // Prevent default form submission
 
             // Call the function to submit the form with registration fee
             submitFormWithRegistrationFee();
+        });
+
+        const BULK_REQUIRED_HEADERS = [
+            'membership_type',
+            'first_name',
+            'last_name',
+            'personal_email',
+            'birthday',
+            'prc_type',
+            'payment_method'
+        ];
+
+        let bulkRowsForUpload = [];
+
+        function parseCsvLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+
+            result.push(current.trim());
+            return result;
+        }
+
+        function parseCsvText(csvText) {
+            const lines = csvText
+                .replace(/\r\n/g, '\n')
+                .replace(/\r/g, '\n')
+                .split('\n')
+                .filter(line => line.trim() !== '');
+
+            if (!lines.length) {
+                return {
+                    headers: [],
+                    rows: []
+                };
+            }
+
+            const headers = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
+            const rows = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const columns = parseCsvLine(lines[i]);
+                const rowObj = {};
+
+                headers.forEach((header, idx) => {
+                    rowObj[header] = (columns[idx] || '').trim();
+                });
+
+                rowObj.__csv_row_number = i + 1;
+                rows.push(rowObj);
+            }
+
+            return {
+                headers,
+                rows
+            };
+        }
+
+        function validateBulkRows(headers, rows) {
+            const errors = [];
+            const headerSet = new Set(headers);
+
+            BULK_REQUIRED_HEADERS.forEach(requiredHeader => {
+                if (!headerSet.has(requiredHeader)) {
+                    errors.push(`Missing required header: ${requiredHeader}`);
+                }
+            });
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            rows.forEach(row => {
+                BULK_REQUIRED_HEADERS.forEach(requiredHeader => {
+                    if (!row[requiredHeader]) {
+                        errors.push(`Row ${row.__csv_row_number}: ${requiredHeader} is required.`);
+                    }
+                });
+
+                if (row.personal_email && !emailRegex.test(row.personal_email)) {
+                    errors.push(`Row ${row.__csv_row_number}: personal_email is invalid.`);
+                }
+            });
+
+            return errors;
+        }
+
+        function renderBulkPreview(headers, rows, errors) {
+            const summaryEl = document.getElementById('bulkPreviewSummary');
+            const wrapperEl = document.getElementById('bulkPreviewWrapper');
+            const tableHead = document.querySelector('#bulkPreviewTable thead');
+            const tableBody = document.querySelector('#bulkPreviewTable tbody');
+            const errorsEl = document.getElementById('bulkPreviewErrors');
+            const approveBtn = document.getElementById('approveBulkUpload');
+
+            if (!rows.length || !headers.length) {
+                summaryEl.textContent = 'No data to preview.';
+                wrapperEl.style.display = 'none';
+                errorsEl.innerHTML = '';
+                approveBtn.disabled = true;
+                return;
+            }
+
+            summaryEl.textContent = `Parsed ${rows.length} row(s). Review below before upload.`;
+
+            tableHead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+            tableBody.innerHTML = rows.slice(0, 100).map(row => {
+                const tds = headers.map(h => `<td>${(row[h] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`).join('');
+                return `<tr>${tds}</tr>`;
+            }).join('');
+            wrapperEl.style.display = 'block';
+
+            if (rows.length > 100) {
+                summaryEl.textContent += ' Showing first 100 row(s) only.';
+            }
+
+            if (errors.length) {
+                errorsEl.innerHTML = `<div class="alert alert-danger mb-0"><strong>Fix these first:</strong><ul class="mb-0 mt-2">${errors.slice(0, 20).map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+                approveBtn.disabled = true;
+                bulkRowsForUpload = [];
+            } else {
+                errorsEl.innerHTML = '<div class="alert alert-success mb-0">CSV looks good. You can now approve and upload.</div>';
+                approveBtn.disabled = false;
+                bulkRowsForUpload = rows;
+            }
+        }
+
+        document.getElementById('bulkCsvFile').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvText = e.target.result || '';
+                const parsed = parseCsvText(csvText);
+                const errors = validateBulkRows(parsed.headers, parsed.rows);
+                renderBulkPreview(parsed.headers, parsed.rows, errors);
+            };
+            reader.readAsText(file);
+        });
+
+        document.getElementById('approveBulkUpload').addEventListener('click', async function() {
+            if (!bulkRowsForUpload.length) {
+                return;
+            }
+
+            const approveBtn = document.getElementById('approveBulkUpload');
+            approveBtn.disabled = true;
+            approveBtn.textContent = 'Uploading...';
+
+            try {
+                const response = await fetch('bulk_register_upload.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rows: bulkRowsForUpload
+                    })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    const errorMessages = (result.errors || [result.message || 'Upload failed'])
+                        .slice(0, 20)
+                        .map(err => `<li>${String(err).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</li>`)
+                        .join('');
+
+                    document.getElementById('bulkPreviewErrors').innerHTML = `<div class="alert alert-danger mb-0"><strong>Upload failed:</strong><ul class="mb-0 mt-2">${errorMessages}</ul></div>`;
+                    return;
+                }
+
+                document.getElementById('bulkPreviewErrors').innerHTML = `<div class="alert alert-success mb-0">${result.message}</div>`;
+                document.getElementById('bulkCsvFile').value = '';
+                document.getElementById('bulkPreviewSummary').textContent = '';
+                document.getElementById('bulkPreviewWrapper').style.display = 'none';
+                bulkRowsForUpload = [];
+            } catch (error) {
+                document.getElementById('bulkPreviewErrors').innerHTML = `<div class="alert alert-danger mb-0">Unexpected error while uploading CSV.</div>`;
+            } finally {
+                approveBtn.textContent = 'Approve and Upload to Database';
+                approveBtn.disabled = false;
+            }
         });
     </script>
 
