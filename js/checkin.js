@@ -1271,7 +1271,8 @@ Protocol: ${location.protocol}
                     middlename,
                     email,
                     prclicensenumber,
-                    chapter
+                    chapter,
+                    qrcode
                 })
             })
                 .then(response => response.json())

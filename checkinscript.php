@@ -32,14 +32,25 @@ if (!is_array($data)) {
     respond_json(['success' => false, 'message' => 'Invalid JSON payload'], 400);
 }
 
-$email = trim((string) ($data['email'] ?? ''));
+$email = strtolower(trim((string) ($data['email'] ?? '')));
+$firstname = trim((string) ($data['firstname'] ?? ''));
+$lastname = trim((string) ($data['lastname'] ?? ''));
+$middlename = trim((string) ($data['middlename'] ?? ''));
+$prclicensenumber = trim((string) ($data['prclicensenumber'] ?? ''));
+$chapter = trim((string) ($data['chapter'] ?? ''));
+$qrcode = trim((string) ($data['qrcode'] ?? ''));
+
+$middlename = $middlename === '' ? null : $middlename;
+$prclicensenumber = $prclicensenumber === '' ? null : $prclicensenumber;
+$chapter = $chapter === '' ? null : $chapter;
+$qrcode = $qrcode === '' ? null : $qrcode;
 
 if ($email === '') {
     respond_json(['success' => false, 'message' => 'Email is required'], 400);
 }
 
 // Check if the user has already checked in
-$check_query = "SELECT checkin_time FROM checkins WHERE email = ? AND checkin_time IS NOT NULL";
+$check_query = "SELECT checkin_time FROM checkins WHERE LOWER(TRIM(email)) = ? AND checkin_time IS NOT NULL";
 $stmt = $db->prepare($check_query);
 $existing_checkin_time = null;
 
@@ -63,7 +74,7 @@ if ($existing_checkin_time) {
 } else {
     // Update the check-in time and check-in by user
     $checkin_time = date('Y-m-d H:i:s');  // Current time in Asia/Manila timezone
-    $update_query = "UPDATE checkins SET checkin_time = ?, checkin_by = ? WHERE email = ?";
+    $update_query = "UPDATE checkins SET checkin_time = ?, checkin_by = ? WHERE LOWER(TRIM(email)) = ?";
     $stmt = $db->prepare($update_query);
 
     if (!$stmt) {
@@ -76,7 +87,42 @@ if ($existing_checkin_time) {
         if ($stmt->affected_rows > 0) {
             $response = ['success' => true, 'message' => 'Check-in updated successfully!'];
         } else {
-            $response = ['success' => false, 'message' => 'No matching record found to update.'];
+            // Fallback path: create missing checkins row, then consider check-in successful.
+            // This handles race conditions where check-in is clicked before pre-insert finishes.
+            if ($firstname === '' || $lastname === '') {
+                $response = ['success' => false, 'message' => 'No matching record found to update.'];
+            } else {
+                $insert_query = "INSERT INTO checkins (firstname, lastname, middlename, email, prclicensenumber, chapter, qrcode, scanned_time, checkin_time, scanned_by, checkin_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $insert_stmt = $db->prepare($insert_query);
+
+                if (!$insert_stmt) {
+                    $response = ['success' => false, 'message' => 'Database error: failed to prepare fallback insert'];
+                } else {
+                    $scanned_time = $checkin_time;
+                    $insert_stmt->bind_param(
+                        "sssssssssii",
+                        $firstname,
+                        $lastname,
+                        $middlename,
+                        $email,
+                        $prclicensenumber,
+                        $chapter,
+                        $qrcode,
+                        $scanned_time,
+                        $checkin_time,
+                        $user_id,
+                        $user_id
+                    );
+
+                    if ($insert_stmt->execute()) {
+                        $response = ['success' => true, 'message' => 'Check-in updated successfully!'];
+                    } else {
+                        $response = ['success' => false, 'message' => 'Check-in update failed: ' . $insert_stmt->error];
+                    }
+
+                    $insert_stmt->close();
+                }
+            }
         }
     } else {
         $response = ['success' => false, 'message' => 'Check-in update failed: ' . $stmt->error];
