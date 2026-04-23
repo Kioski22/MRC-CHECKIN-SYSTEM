@@ -915,6 +915,96 @@ if ($registration_success) {
             'payment_method'
         ];
 
+        const BULK_HEADER_LABELS = {
+            membership_type: 'Membership Type',
+            pwd: 'PWD',
+            senior_citizen: 'Senior Citizen',
+            new_board_passer: 'New Board Passer',
+            free: 'Free Registration',
+            freeReason: 'Reason if Free',
+            first_name: 'First Name',
+            middle_name_na: 'No Middle Name',
+            middle_name: 'Middle Name',
+            last_name: 'Last Name',
+            name_suffix: 'Suffix',
+            personal_email: 'Email Address',
+            mobile_number: 'Mobile Number',
+            birthday: 'Birth Date',
+            prc_type: 'PRC Type',
+            prc_license_number: 'PRC License Number',
+            prc_expiration_date: 'PRC Expiration Date',
+            has_prc_license: 'Has PRC License',
+            sequence_number: 'Sequence Number',
+            region: 'Region',
+            chapter: 'Chapter',
+            other: 'Other',
+            payment_method: 'Payment Method',
+            payment_note: 'Payment Note'
+        };
+
+        const BULK_HEADER_ALIASES = {
+            'membership_type': 'membership_type',
+            'membership type (1=regular, 2=affiliate, 3=student)': 'membership_type',
+            'membership type': 'membership_type',
+            'pwd': 'pwd',
+            'pwd (0=no, 1=yes)': 'pwd',
+            'senior_citizen': 'senior_citizen',
+            'senior citizen (0=no, 1=yes)': 'senior_citizen',
+            'new_board_passer': 'new_board_passer',
+            'new board passer (0=no, 1=yes)': 'new_board_passer',
+            'free': 'free',
+            'free registration (0=no, 1=yes)': 'free',
+            'freereason': 'freeReason',
+            'reason if free': 'freeReason',
+            'first_name': 'first_name',
+            'first name': 'first_name',
+            'middle_name_na': 'middle_name_na',
+            'no middle name (0=no, 1=yes)': 'middle_name_na',
+            'middle_name': 'middle_name',
+            'middle name': 'middle_name',
+            'last_name': 'last_name',
+            'last name': 'last_name',
+            'name_suffix': 'name_suffix',
+            'suffix (optional)': 'name_suffix',
+            'personal_email': 'personal_email',
+            'email address': 'personal_email',
+            'mobile_number': 'mobile_number',
+            'mobile number': 'mobile_number',
+            'birthday': 'birthday',
+            'birth date (yyyy-mm-dd)': 'birthday',
+            'prc_type': 'prc_type',
+            'prc type': 'prc_type',
+            'prc_license_number': 'prc_license_number',
+            'prc license number': 'prc_license_number',
+            'prc_expiration_date': 'prc_expiration_date',
+            'prc expiration date (yyyy-mm-dd)': 'prc_expiration_date',
+            'has_prc_license': 'has_prc_license',
+            'has prc license (0=no, 1=yes)': 'has_prc_license',
+            'sequence_number': 'sequence_number',
+            'sequence number (optional)': 'sequence_number',
+            'region': 'region',
+            'chapter': 'chapter',
+            'other': 'other',
+            'other (optional)': 'other',
+            'payment_method': 'payment_method',
+            'payment method (cash/gcash/bank_transfer/check)': 'payment_method',
+            'payment_note': 'payment_note',
+            'payment note (optional)': 'payment_note'
+        };
+
+        function normalizeCsvHeader(headerText) {
+            return String(headerText || '').trim().toLowerCase();
+        }
+
+        function toCanonicalHeader(headerText) {
+            const normalized = normalizeCsvHeader(headerText);
+            return BULK_HEADER_ALIASES[normalized] || normalized;
+        }
+
+        function getHeaderLabel(headerKey) {
+            return BULK_HEADER_LABELS[headerKey] || headerKey;
+        }
+
         let bulkRowsForUpload = [];
 
         function parseCsvLine(line) {
@@ -959,7 +1049,7 @@ if ($registration_success) {
                 };
             }
 
-            const headers = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
+            const headers = parseCsvLine(lines[0]).map(h => toCanonicalHeader(h));
             const rows = [];
 
             for (let i = 1; i < lines.length; i++) {
@@ -986,7 +1076,7 @@ if ($registration_success) {
 
             BULK_REQUIRED_HEADERS.forEach(requiredHeader => {
                 if (!headerSet.has(requiredHeader)) {
-                    errors.push(`Missing required header: ${requiredHeader}`);
+                    errors.push(`Missing required column: ${getHeaderLabel(requiredHeader)}`);
                 }
             });
 
@@ -995,12 +1085,12 @@ if ($registration_success) {
             rows.forEach(row => {
                 BULK_REQUIRED_HEADERS.forEach(requiredHeader => {
                     if (!row[requiredHeader]) {
-                        errors.push(`Row ${row.__csv_row_number}: ${requiredHeader} is required.`);
+                        errors.push(`Row ${row.__csv_row_number}: ${getHeaderLabel(requiredHeader)} is required.`);
                     }
                 });
 
                 if (row.personal_email && !emailRegex.test(row.personal_email)) {
-                    errors.push(`Row ${row.__csv_row_number}: personal_email is invalid.`);
+                    errors.push(`Row ${row.__csv_row_number}: Email Address is invalid.`);
                 }
             });
 
@@ -1025,7 +1115,7 @@ if ($registration_success) {
 
             summaryEl.textContent = `Parsed ${rows.length} row(s). Review below before upload.`;
 
-            tableHead.innerHTML = `<tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>`;
+            tableHead.innerHTML = `<tr>${headers.map(h => `<th>${getHeaderLabel(h)}</th>`).join('')}</tr>`;
             tableBody.innerHTML = rows.slice(0, 100).map(row => {
                 const tds = headers.map(h => `<td>${(row[h] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>`).join('');
                 return `<tr>${tds}</tr>`;
