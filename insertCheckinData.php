@@ -32,8 +32,8 @@ if (!is_array($input)) {
     respond_json(['success' => false, 'message' => 'Invalid JSON payload'], 400);
 }
 
-// Validate required fields (prclicensenumber is optional)
-if (empty(trim((string) ($input['firstname'] ?? ''))) || empty(trim((string) ($input['lastname'] ?? ''))) || empty(trim((string) ($input['email'] ?? ''))) || empty(trim((string) ($input['qrcode'] ?? '')))) {
+// Validate required fields (prclicensenumber and qrcode are optional)
+if (empty(trim((string) ($input['firstname'] ?? ''))) || empty(trim((string) ($input['lastname'] ?? ''))) || empty(trim((string) ($input['email'] ?? '')))) {
     respond_json(['success' => false, 'message' => 'Missing required fields'], 400);
 }
 
@@ -43,7 +43,10 @@ $middlename = $input['middlename'] ?? null;
 $email = $input['email'];
 $prclicensenumber = $input['prclicensenumber'] ?? null; // Allow NULL
 $chapter = $input['chapter'] ?? null;
-$qrcode = $input['qrcode'];
+$qrcode = trim((string) ($input['qrcode'] ?? ''));
+if ($qrcode === '' || $qrcode === '#' || strtolower($qrcode) === 'n/a') {
+    $qrcode = null;
+}
 
 // Set the scanned_time to the current time in Asia/Manila timezone
 $scanned_time = date('Y-m-d H:i:s');

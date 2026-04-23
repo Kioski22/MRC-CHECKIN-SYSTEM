@@ -56,7 +56,7 @@ function insertCheckinData(data) {
                 email: data.email,
                 prclicensenumber: data.prclicencenumber,
                 chapter: data.chapter,
-                qrcode: data.qrcode
+                qrcode: data.qrcode || ''
             })
         })
         .then(response => response.json())
@@ -425,7 +425,10 @@ function checkIn() {
     const email = document.getElementById('modalEmail').innerText;
     const prclicensenumber = document.getElementById('modalPrclicensenumber').innerText;
     const chapter = document.getElementById('modalChapter').innerText;
-    const qrcode = document.getElementById('modalQrcodeLink').href;
+    const qrcodeLinkEl = document.getElementById('modalQrcodeLink');
+    const qrcode = (qrcodeLinkEl && qrcodeLinkEl.getAttribute('href') === '#')
+        ? ''
+        : (qrcodeLinkEl ? qrcodeLinkEl.href : '');
 
     fetch('checkinscript', {
             method: 'POST',

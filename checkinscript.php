@@ -43,7 +43,9 @@ $qrcode = trim((string) ($data['qrcode'] ?? ''));
 $middlename = $middlename === '' ? null : $middlename;
 $prclicensenumber = $prclicensenumber === '' ? null : $prclicensenumber;
 $chapter = $chapter === '' ? null : $chapter;
-$qrcode = $qrcode === '' ? null : $qrcode;
+if ($qrcode === '' || $qrcode === '#' || strtolower($qrcode) === 'n/a') {
+    $qrcode = null;
+}
 
 if ($email === '') {
     respond_json(['success' => false, 'message' => 'Email is required'], 400);
