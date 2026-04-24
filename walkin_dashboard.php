@@ -17,19 +17,16 @@ if (!hasRole('admin')) {
 
 $totalRegistrations = 0;
 $todayRegistrations = 0;
-$totalFees = 0.0;
 
 $statsSql = "SELECT
                 COUNT(*) AS total_registrations,
-                SUM(CASE WHEN DATE(`timestamp`) = CURDATE() THEN 1 ELSE 0 END) AS today_registrations,
-                COALESCE(SUM(CAST(registration_fee AS DECIMAL(10,2))), 0) AS total_fees
+                SUM(CASE WHEN DATE(`timestamp`) = CURDATE() THEN 1 ELSE 0 END) AS today_registrations
              FROM registrations";
 $statsResult = $db->query($statsSql);
 if ($statsResult) {
     $statsRow = $statsResult->fetch_assoc();
     $totalRegistrations = (int) ($statsRow['total_registrations'] ?? 0);
     $todayRegistrations = (int) ($statsRow['today_registrations'] ?? 0);
-    $totalFees = (float) ($statsRow['total_fees'] ?? 0);
 }
 ?>
 <!DOCTYPE html>
@@ -71,7 +68,7 @@ if ($statsResult) {
                     <div id="statusAlert"></div>
 
                     <div class="row">
-                        <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="col-xl-6 col-md-6 mb-4">
                             <div class="card border-left-primary shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Walk-in Registrations</div>
@@ -80,20 +77,11 @@ if ($statsResult) {
                             </div>
                         </div>
 
-                        <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="col-xl-6 col-md-6 mb-4">
                             <div class="card border-left-success shadow h-100 py-2">
                                 <div class="card-body">
                                     <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Today's Registrations</div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo number_format($todayRegistrations); ?></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-xl-4 col-md-6 mb-4">
-                            <div class="card border-left-info shadow h-100 py-2">
-                                <div class="card-body">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Collected Fees</div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">PHP <?php echo number_format($totalFees, 2); ?></div>
                                 </div>
                             </div>
                         </div>
