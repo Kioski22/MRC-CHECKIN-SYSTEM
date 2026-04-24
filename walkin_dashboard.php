@@ -90,6 +90,9 @@ if ($statsResult) {
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h6 class="m-0 font-weight-bold text-primary">Walk-in Registrations</h6>
+                            <button id="exportCsvBtn" class="btn btn-sm btn-success">
+                                <i class="fas fa-file-csv"></i> Export CSV
+                            </button>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -234,6 +237,48 @@ if ($statsResult) {
             $('#walkinTable').on('click', '.resend-btn', function() {
                 const qrcode = $(this).data('qrcode');
                 resendConfirmationEmail(qrcode);
+            });
+
+            $('#exportCsvBtn').on('click', function() {
+                const table = $('#walkinTable').DataTable();
+                const headers = ['Date Registered', 'Reference No.', 'Name', 'Email', 'Mobile', 'Membership', 'Fee', 'Payment Method'];
+                const rows = table.rows({ search: 'applied' }).data().toArray();
+
+                const escape = function(val) {
+                    val = (val === null || val === undefined) ? '' : String(val);
+                    val = val.replace(/<[^>]*>/g, ''); // strip HTML tags
+                    if (val.search(/("|
+|,)/g) >= 0) {
+                        val = '"' + val.replace(/"/g, '""') + '"';
+                    }
+                    return val;
+                };
+
+                let csv = headers.map(escape).join(',') + '\n';
+                rows.forEach(function(row) {
+                    const fee = parseFloat(row.registration_fee || 0).toFixed(2);
+                    const line = [
+                        row.timestamp,
+                        row.qrcode,
+                        row.name,
+                        row.email,
+                        row.mobile,
+                        row.membership,
+                        fee,
+                        row.payment_method
+                    ].map(escape).join(',');
+                    csv += line + '\n';
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'walkin_registrations_' + new Date().toISOString().slice(0, 10) + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             });
         });
     </script>
