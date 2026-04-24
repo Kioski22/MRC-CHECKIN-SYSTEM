@@ -16,7 +16,7 @@ if (!hasRole('admin')) {
     exit();
 }
 
-$sql = "SELECT qrcode, first_name, middle_name, last_name, name_suffix, personal_email, mobile_number, membership_type, registration_fee, payment_method, `timestamp`
+$sql = "SELECT qrcode, first_name, middle_name, last_name, name_suffix, personal_email, mobile_number, membership_type, registration_fee, payment_method, chapter, `timestamp`
         FROM registrations
         ORDER BY `timestamp` DESC";
 
@@ -57,6 +57,7 @@ while ($row = $result->fetch_assoc()) {
         'membership' => $membershipMap[$membershipType] ?? 'Unknown',
         'registration_fee' => (string) ($row['registration_fee'] ?? '0.00'),
         'payment_method' => (string) ($row['payment_method'] ?? ''),
+        'chapter' => (string) ($row['chapter'] ?? ''),
     ];
 }
 

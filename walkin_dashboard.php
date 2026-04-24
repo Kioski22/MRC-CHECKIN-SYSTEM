@@ -105,6 +105,7 @@ if ($statsResult) {
                                             <th>Email</th>
                                             <th>Mobile</th>
                                             <th>Membership</th>
+                                            <th>Chapter</th>
                                             <th>Fee</th>
                                             <th>Payment Method</th>
                                             <th>Actions</th>
@@ -213,6 +214,7 @@ if ($statsResult) {
                     { data: 'email' },
                     { data: 'mobile' },
                     { data: 'membership' },
+                    { data: 'chapter' },
                     {
                         data: 'registration_fee',
                         render: function(data) {
@@ -241,7 +243,7 @@ if ($statsResult) {
 
             $('#exportCsvBtn').on('click', function() {
                 const table = $('#walkinTable').DataTable();
-                const headers = ['Date Registered', 'Reference No.', 'Name', 'Email', 'Mobile', 'Membership', 'Fee', 'Payment Method'];
+                const headers = ['Date Registered', 'Reference No.', 'Name', 'Email', 'Mobile', 'Membership', 'Chapter', 'Fee', 'Payment Method'];
                 const rows = table.rows({ search: 'applied' }).data().toArray();
 
                 const escape = function(val) {
@@ -263,6 +265,7 @@ if ($statsResult) {
                         row.email,
                         row.mobile,
                         row.membership,
+                        row.chapter,
                         fee,
                         row.payment_method
                     ].map(escape).join(',');
