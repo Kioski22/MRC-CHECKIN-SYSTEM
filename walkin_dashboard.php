@@ -247,8 +247,7 @@ if ($statsResult) {
                 const escape = function(val) {
                     val = (val === null || val === undefined) ? '' : String(val);
                     val = val.replace(/<[^>]*>/g, ''); // strip HTML tags
-                    if (val.search(/("|
-|,)/g) >= 0) {
+                    if (val.search(/(\"|\n|,)/g) >= 0) {
                         val = '"' + val.replace(/"/g, '""') + '"';
                     }
                     return val;
