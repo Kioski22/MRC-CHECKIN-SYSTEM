@@ -37,6 +37,8 @@ $data = [];
 while ($row = $result->fetch_assoc()) {
     $middle = trim((string) ($row['middle_name'] ?? ''));
     $suffix = trim((string) ($row['name_suffix'] ?? ''));
+    $referenceNo = (string) ($row['qrcode'] ?? '');
+    $noteText = trim((string) ($row['freeReason'] ?? ''));
 
     if (strcasecmp($middle, 'N/A') === 0) {
         $middle = '';
@@ -48,6 +50,12 @@ while ($row = $result->fetch_assoc()) {
     $fullName = trim(($row['first_name'] ?? '') . ' ' . $middle . ' ' . ($row['last_name'] ?? '') . ' ' . $suffix);
     $membershipType = (int) ($row['membership_type'] ?? 0);
 
+    if ($noteText !== '' && $referenceNo !== '') {
+        $noteText .= ' (Ref: ' . $referenceNo . ')';
+    } elseif ($referenceNo !== '') {
+        $noteText = 'Ref: ' . $referenceNo;
+    }
+
     $data[] = [
         'timestamp' => (string) ($row['timestamp'] ?? ''),
         'qrcode' => (string) ($row['qrcode'] ?? ''),
@@ -58,7 +66,7 @@ while ($row = $result->fetch_assoc()) {
         'registration_fee' => (string) ($row['registration_fee'] ?? '0.00'),
         'payment_method' => (string) ($row['payment_method'] ?? ''),
         'chapter' => (string) ($row['chapter'] ?? ''),
-        'notes' => (string) ($row['freeReason'] ?? ''),
+        'notes' => $noteText,
     ];
 }
 
