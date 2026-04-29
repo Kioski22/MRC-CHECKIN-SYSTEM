@@ -243,7 +243,7 @@ if ($statsResult) {
 
             $('#exportCsvBtn').on('click', function() {
                 const table = $('#walkinTable').DataTable();
-                const headers = ['Date Registered', 'Reference No.', 'Name', 'Email', 'Mobile', 'Membership', 'Chapter', 'Fee', 'Payment Method'];
+                const headers = ['Date Registered', 'Reference No.', 'Name', 'Email', 'Mobile', 'Membership', 'Chapter', 'Fee', 'Payment Method', 'Notes'];
                 const rows = table.rows({ search: 'applied' }).data().toArray();
 
                 const escape = function(val) {
@@ -267,7 +267,8 @@ if ($statsResult) {
                         row.membership,
                         row.chapter,
                         fee,
-                        row.payment_method
+                        row.payment_method,
+                        row.notes
                     ].map(escape).join(',');
                     csv += line + '\n';
                 });
