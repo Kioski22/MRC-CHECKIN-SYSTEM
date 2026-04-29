@@ -16,7 +16,7 @@ if (!hasRole('admin')) {
     exit();
 }
 
-$sql = "SELECT qrcode, first_name, middle_name, last_name, name_suffix, personal_email, mobile_number, membership_type, registration_fee, payment_method, chapter, freeReason, `timestamp`
+$sql = "SELECT qrcode, first_name, middle_name, last_name, name_suffix, personal_email, mobile_number, membership_type, registration_fee, payment_method, payment_note, chapter, `timestamp`
         FROM registrations
         ORDER BY `timestamp` DESC";
 
@@ -37,8 +37,7 @@ $data = [];
 while ($row = $result->fetch_assoc()) {
     $middle = trim((string) ($row['middle_name'] ?? ''));
     $suffix = trim((string) ($row['name_suffix'] ?? ''));
-    $referenceNo = (string) ($row['qrcode'] ?? '');
-    $noteText = trim((string) ($row['freeReason'] ?? ''));
+    $noteText = trim((string) ($row['payment_note'] ?? ''));
 
     if (strcasecmp($middle, 'N/A') === 0) {
         $middle = '';
@@ -49,12 +48,6 @@ while ($row = $result->fetch_assoc()) {
 
     $fullName = trim(($row['first_name'] ?? '') . ' ' . $middle . ' ' . ($row['last_name'] ?? '') . ' ' . $suffix);
     $membershipType = (int) ($row['membership_type'] ?? 0);
-
-    if ($noteText !== '' && $referenceNo !== '') {
-        $noteText .= ' (Ref: ' . $referenceNo . ')';
-    } elseif ($referenceNo !== '') {
-        $noteText = 'Ref: ' . $referenceNo;
-    }
 
     $data[] = [
         'timestamp' => (string) ($row['timestamp'] ?? ''),
