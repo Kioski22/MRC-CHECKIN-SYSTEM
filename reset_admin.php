@@ -1,7 +1,7 @@
 <?php
 include 'dbConnection.php';
 
-$username = 'LRC';
+$username = 'admin';
 $newPassword = '091902rANDS@'; // The new password to set
 $newHash = password_hash($newPassword, PASSWORD_DEFAULT);
 

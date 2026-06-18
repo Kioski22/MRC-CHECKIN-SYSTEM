@@ -2,11 +2,11 @@
 // Database connection settings (env vars override hardcoded defaults)
 $host        = getenv('DB_HOST') ?: 'localhost';
 $db_name     = getenv('DB_NAME') ?: 'mrc';
-$db_user     = getenv('DB_USER') ?: 'icto_randy4';
+$db_user     = getenv('DB_USER') ?: 'LRC';
 
 // FIX: getenv() returns empty string '' (not false) when var is unset on some servers.
 // Use ?: so that an empty string also falls back to the hardcoded password.
-$db_password = getenv('DB_PASSWORD') ?: '091902Rands@';
+$db_password = getenv('DB_PASSWORD') ?: '091902rANDS@';
 
 mysqli_report(MYSQLI_REPORT_OFF);
 
