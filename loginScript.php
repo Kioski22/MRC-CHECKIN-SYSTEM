@@ -16,19 +16,18 @@ if ($username === '' || $password === '') {
     exit();
 }
 
-// Verify user credentials. Allow login by username or email for compatibility.
-$stmt = $db->prepare("SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1");
-if (!$stmt) {
-    $_SESSION['error'] = 'Unable to process login at this time.';
+// Use real_escape_string and standard query because get_result() fails on GoDaddy cPanel if mysqlnd driver is missing.
+$usernameEscaped = $db->real_escape_string($username);
+$query = "SELECT * FROM users WHERE username = '$usernameEscaped' OR email = '$usernameEscaped' LIMIT 1";
+$result = $db->query($query);
+
+if (!$result) {
+    $_SESSION['error'] = 'Database query failed: ' . $db->error;
     header("Location: login.php");
     exit();
 }
 
-$stmt->bind_param("ss", $username, $username);
-$stmt->execute();
-$result = $stmt->get_result();
 $user = $result->fetch_assoc();
-$stmt->close();
 
 if (!$user) {
     error_log('Auth failed: user not found for identifier=' . $username);
