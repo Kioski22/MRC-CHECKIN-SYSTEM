@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             $_SESSION['error'] = ""; ?>
                                         </div>
                                     <?php endif; ?>
-                                    <form class="user" method="POST" action="forgot-verify.php">
+                                    <form class="user" method="POST" action="forgot-verify">
                                         <div class="form-group">
                                             <input type="text" class="form-control form-control-user" id="otp" name="otp" placeholder="Enter OTP" required>
                                         </div>

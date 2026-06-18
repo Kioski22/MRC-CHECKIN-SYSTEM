@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                             $_SESSION['error'] = ""; ?>
                                         </div>
                                     <?php endif; ?>
-                                    <form class="user" method="POST" action="reset-password.php">
+                                    <form class="user" method="POST" action="reset-password">
                                         <div class="form-group">
                                             <input type="password" class="form-control form-control-user" id="new_password" name="new_password" placeholder="Enter New Password" required>
                                         </div>
