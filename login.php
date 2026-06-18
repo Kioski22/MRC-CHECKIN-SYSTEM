@@ -58,7 +58,7 @@ if (isset($_SESSION['user_id']) || (isset($_SESSION['username']))) {
                                             $_SESSION['error'] = ""; ?>
                                         </div>
                                     <?php endif; ?>
-                                    <form class="user" method="POST" action="loginScript.php">
+                                    <form class="user" method="POST" action="loginScript">
                                         <div class="form-group">
                                             <input type="text" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Enter Username">
                                         </div>

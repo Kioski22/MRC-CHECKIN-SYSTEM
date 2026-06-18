@@ -38,7 +38,7 @@ RewriteRule ^ - [L]
 
 # Keep backend API endpoints on their .php URLs so hosted POST requests do not
 # bounce through an external redirect before PHP reads the body.
-RewriteCond %{REQUEST_URI} /(insertCheckinData|ictosearch|releasemsp|checkinscript|releasekit|ictoqr|renewToken|getRegistrationOrder)\.php$ [NC]
+RewriteCond %{REQUEST_URI} /(insertCheckinData|ictosearch|releasemsp|checkinscript|releasekit|ictoqr|renewToken|getRegistrationOrder|loginScript)\.php$ [NC]
 RewriteRule ^ - [L]
 
 # Redirect .php extension to clean URLs (do this first)
