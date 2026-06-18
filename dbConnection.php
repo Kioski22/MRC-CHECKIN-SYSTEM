@@ -21,7 +21,6 @@ $db = null;
 $lastError = 'Unknown database connection error.';
 
 foreach ($connectionCandidates as $candidate) {
-    [$candidateHost, $candidateUser, $candidatePassword, $candidateDb] = $candidate;
     $candidateConnection = @new mysqli($candidateHost, $candidateUser, $candidatePassword, $candidateDb);
 
     if (!$candidateConnection->connect_errno) {
